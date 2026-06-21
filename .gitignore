@@ -3,6 +3,5 @@ alert.log
 send_alert.sh
 sync_snaps.sh
 signal_check.py
-ARCHITECTURE.md
 *.pyc
 .DS_Store
