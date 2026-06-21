@@ -580,7 +580,7 @@ async function writeToICloud(snaps) {
   try {
     const perm=await dir.queryPermission({mode:'readwrite'});
     if(perm!=='granted'&&await dir.requestPermission({mode:'readwrite'})!=='granted') return false;
-    const fh=await dir.getFileHandle('pf_snaps.json',{create:true});
+    const fh=await dir.getFileHandle('pf_snaps_toss.json',{create:true});
     const wr=await fh.createWritable();
     await wr.write(JSON.stringify(snaps,null,2)); await wr.close(); return true;
   } catch { return false; }
