@@ -276,17 +276,16 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(.55) brightn
   <!-- Entry list -->
   <div id="snap-list"></div>
 
-  <!-- Data sync -->
-  <div style="display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)">
-    <button class="btn btn-ref" style="width:auto;padding:7px 14px;font-size:12px"
-            onclick="exportSnapData()">📤 데이터 내보내기</button>
-    <label class="btn btn-ref" style="width:auto;padding:7px 14px;font-size:12px;cursor:pointer;margin:0">
-      📥 데이터 가져오기
-      <input type="file" accept=".json" onchange="importSnapData(this)" style="display:none">
-    </label>
-    <span style="font-size:11px;color:var(--muted);align-self:center">
-      기기 간 데이터 이동 시 사용
-    </span>
+  <!-- iCloud sync -->
+  <div style="display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd);flex-wrap:wrap">
+    <span style="font-size:12px;color:var(--muted)">☁️ iCloud Drive</span>
+    <span id="icloud-status" style="font-size:12px"></span>
+    <button id="icloud-connect-btn" class="btn btn-ref"
+            style="display:none;width:auto;padding:6px 12px;font-size:12px"
+            onclick="connectICloud()">폴더 연결 (Mac 최초 1회)</button>
+    <button class="btn btn-ref"
+            style="width:auto;padding:6px 12px;font-size:12px"
+            onclick="loadFromICloud()">📲 불러오기 (iPhone)</button>
   </div>
 </div>
 
@@ -943,6 +942,9 @@ async function saveSnapshot() {
   renderWealthChart();
   renderSnapList();
   exportHoldings(true);
+  writeToICloud(snaps).then(ok => {
+    if (ok) stat.innerHTML += ' &nbsp;<span style="color:#60a5fa;font-size:11px">☁️ iCloud 저장됨</span>';
+  });
 }
 
 function deleteSnap(date) {
@@ -990,39 +992,98 @@ function renderWealthChart() {
   }, {responsive:true,displayModeBar:false});
 }
 
-function exportSnapData() {
-  const snaps = loadSnaps();
-  if (!snaps.length) { toast('저장된 데이터가 없습니다'); return; }
-  const blob = new Blob([JSON.stringify(snaps, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'pf_snaps.json';
-  a.click();
-  toast('📤 pf_snaps.json 다운로드 완료');
+// ── iCloud Drive 연동 ─────────────────────────────────────────────────────────
+
+function _idbOpen() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('pf-icloud', 1);
+    r.onupgradeneeded = e => e.target.result.createObjectStore('h');
+    r.onsuccess = e => res(e.target.result);
+    r.onerror   = () => rej(r.error);
+  });
+}
+async function _idbSet(v) {
+  const db = await _idbOpen();
+  return new Promise((res,rej) => {
+    const tx = db.transaction('h','readwrite');
+    tx.objectStore('h').put(v,'dir');
+    tx.oncomplete = res; tx.onerror = ()=>rej(tx.error);
+  });
+}
+async function _idbGet() {
+  try {
+    const db = await _idbOpen();
+    return new Promise(res => {
+      const r = db.transaction('h','readonly').objectStore('h').get('dir');
+      r.onsuccess = ()=>res(r.result??null); r.onerror=()=>res(null);
+    });
+  } catch { return null; }
 }
 
-function importSnapData(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (!Array.isArray(data)) throw new Error();
-      const merged = loadSnaps();
-      data.forEach(entry => {
-        const idx = merged.findIndex(s => s.date === entry.date);
-        if (idx >= 0) merged[idx] = entry; else merged.push(entry);
-      });
-      merged.sort((a, b) => a.date.localeCompare(b.date));
-      saveSnaps(merged);
-      renderWealthChart();
-      renderSnapList();
-      toast(`✓ ${data.length}개 기록 가져오기 완료`);
-    } catch { toast('파일 형식 오류'); }
-    input.value = '';
-  };
-  reader.readAsText(file);
+async function connectICloud() {
+  if (!window.showDirectoryPicker) {
+    toast('Chrome에서만 지원됩니다'); return;
+  }
+  try {
+    const dir = await window.showDirectoryPicker({ mode:'readwrite' });
+    await _idbSet(dir);
+    toast('✓ iCloud Drive 폴더 연결 완료 — 이후 저장 시 자동 동기화됩니다');
+    _refreshICloudStatus(dir);
+  } catch(e) { if(e.name!=='AbortError') toast('연결 실패: '+e.message); }
+}
+
+async function _refreshICloudStatus(handle) {
+  const el = document.getElementById('icloud-status');
+  if (!el) return;
+  if (!handle) handle = await _idbGet();
+  if (!handle) { el.innerHTML='<span style="color:var(--muted)">미연결</span>'; return; }
+  const perm = await handle.queryPermission({mode:'readwrite'});
+  const name = handle.name;
+  el.innerHTML = perm==='granted'
+    ? `<span style="color:var(--green)">● ${name}</span>`
+    : `<span style="color:#f97316">● ${name} (권한 필요)</span>`;
+}
+
+async function writeToICloud(snaps) {
+  const dir = await _idbGet();
+  if (!dir) return false;
+  try {
+    const perm = await dir.queryPermission({mode:'readwrite'});
+    if (perm !== 'granted') {
+      const req = await dir.requestPermission({mode:'readwrite'});
+      if (req !== 'granted') return false;
+    }
+    const fh  = await dir.getFileHandle('pf_snaps.json',{create:true});
+    const wr  = await fh.createWritable();
+    await wr.write(JSON.stringify(snaps, null, 2));
+    await wr.close();
+    return true;
+  } catch { return false; }
+}
+
+async function loadFromICloud() {
+  if (!window.showOpenFilePicker) {
+    toast('이 브라우저에서는 지원되지 않습니다'); return;
+  }
+  try {
+    const [fh] = await window.showOpenFilePicker({
+      types:[{description:'JSON',accept:{'application/json':['.json']}}],
+      excludeAcceptAllOption:true,
+    });
+    const text = await (await fh.getFile()).text();
+    const data = JSON.parse(text);
+    if (!Array.isArray(data)) throw new Error('format');
+    const merged = loadSnaps();
+    data.forEach(entry => {
+      const i = merged.findIndex(s=>s.date===entry.date);
+      if (i>=0) merged[i]=entry; else merged.push(entry);
+    });
+    merged.sort((a,b)=>a.date.localeCompare(b.date));
+    saveSnaps(merged);
+    renderWealthChart();
+    renderSnapList();
+    toast(`✓ ${data.length}개 기록 불러옴`);
+  } catch(e) { if(e.name!=='AbortError') toast('불러오기 실패'); }
 }
 
 function renderSnapList() {
@@ -1094,6 +1155,12 @@ async function refresh() {
 
 // Auto-refresh every hour
 setInterval(refresh, 60 * 60 * 1000);
+
+// iCloud Drive 초기화
+if (window.showDirectoryPicker) {
+  document.getElementById('icloud-connect-btn').style.display = '';
+}
+_refreshICloudStatus();
 
 refresh();
 </script>
