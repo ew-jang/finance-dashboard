@@ -146,9 +146,6 @@ tr:hover td { background:var(--bg2); }
     <button id="icloud-connect-btn" class="btn btn-ref"
             style="display:none;width:auto;padding:6px 12px;font-size:12px"
             onclick="connectICloud()">폴더 연결 (Mac 최초 1회)</button>
-    <button class="btn btn-ref"
-            style="width:auto;padding:6px 12px;font-size:12px"
-            onclick="loadFromICloud()">📲 불러오기 (iPhone)</button>
   </div>
 </div>
 
@@ -587,25 +584,6 @@ async function writeToICloud(snaps) {
     const wr=await fh.createWritable();
     await wr.write(JSON.stringify(snaps,null,2)); await wr.close(); return true;
   } catch { return false; }
-}
-function _mergeSnapsFromText(text) {
-  const data=JSON.parse(text); if(!Array.isArray(data)) throw new Error('format');
-  const merged=loadSnaps();
-  data.forEach(entry=>{const i=merged.findIndex(s=>s.date===entry.date);if(i>=0)merged[i]=entry;else merged.push(entry);});
-  merged.sort((a,b)=>a.date.localeCompare(b.date)); saveSnaps(merged);
-  renderWealthChart(); renderSnapList(); toast(`✓ ${data.length}개 기록 불러옴`);
-}
-async function loadFromICloud() {
-  if (window.showOpenFilePicker) {
-    try {
-      const [fh]=await window.showOpenFilePicker({types:[{description:'JSON',accept:{'application/json':['.json']}}],excludeAcceptAllOption:true});
-      _mergeSnapsFromText(await(await fh.getFile()).text());
-    } catch(e){if(e.name!=='AbortError')toast('불러오기 실패');}
-  } else {
-    const inp=document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
-    inp.onchange=()=>{const file=inp.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{try{_mergeSnapsFromText(e.target.result);}catch{toast('파일 형식 오류');}};reader.readAsText(file);};
-    inp.click();
-  }
 }
 
 // ── Refresh ───────────────────────────────────────────────────────────────────
