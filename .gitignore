@@ -1,0 +1,6 @@
+alert.log
+my_holdings.json
+send_alert.sh
+signal_check.py
+*.pyc
+.DS_Store
