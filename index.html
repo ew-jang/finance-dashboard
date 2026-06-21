@@ -943,7 +943,16 @@ async function saveSnapshot() {
   renderSnapList();
   exportHoldings(true);
   writeToICloud(snaps).then(ok => {
-    if (ok) stat.innerHTML += ' &nbsp;<span style="color:#60a5fa;font-size:11px">☁️ iCloud 저장됨</span>';
+    if (ok) {
+      stat.innerHTML += ' &nbsp;<span style="color:#60a5fa;font-size:11px">☁️ iCloud 저장됨</span>';
+    } else {
+      // Chrome 폴더 연결 없으면 pf_snaps.json 다운로드 (Safari download 위치를 iCloud Drive로 설정 시 자동 동기화)
+      const blob = new Blob([JSON.stringify(snaps,null,2)],{type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'pf_snaps.json';
+      a.click();
+    }
   });
 }
 
