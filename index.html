@@ -223,9 +223,13 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(.55) brightn
 
 <!-- Portfolio Tracker -->
 <div class="card" style="margin-bottom:20px">
-  <div class="sec-title">📈 토스 증권 포트폴리오 추적
-    <span style="font-size:11px;color:var(--muted);font-weight:400">— TQQQ · QQQM · USD &nbsp;|&nbsp; 보유 현황 기록 &amp; 자산 변화 그래프</span>
+  <div class="sec-title" onclick="toggleTracker()" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none">
+    <span>📈 토스 증권 포트폴리오 추적
+      <span style="font-size:11px;color:var(--muted);font-weight:400">— TQQQ · QQQM · USD</span>
+    </span>
+    <span id="tracker-chevron" style="font-size:14px;color:var(--muted);transition:transform .2s">▼</span>
   </div>
+  <div id="tracker-body" style="display:none">
 
   <div class="tracker-grid">
     <!-- Left: current regime + recommendation -->
@@ -288,6 +292,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(.55) brightn
             style="width:auto;padding:6px 12px;font-size:12px"
             onclick="loadFromICloud()">📲 불러오기 (iPhone)</button>
   </div>
+  </div><!-- /tracker-body -->
 </div>
 
 <!-- Charts -->
@@ -1232,11 +1237,24 @@ async function refresh() {
 // Auto-refresh every hour
 setInterval(refresh, 60 * 60 * 1000);
 
+// 포트폴리오 섹션 토글
+function toggleTracker() {
+  const body = document.getElementById('tracker-body');
+  const chevron = document.getElementById('tracker-chevron');
+  const open = body.style.display === 'none';
+  body.style.display = open ? '' : 'none';
+  chevron.style.transform = open ? 'rotate(180deg)' : '';
+  try { localStorage.setItem('tracker_open', open ? '1' : '0'); } catch {}
+}
+
 // iCloud Drive 초기화
 if (window.showDirectoryPicker) {
   document.getElementById('icloud-connect-btn').style.display = '';
 }
 _refreshICloudStatus();
+
+// 포트폴리오 섹션 이전 상태 복원
+if (localStorage.getItem('tracker_open') === '1') toggleTracker();
 
 // GitHub에서 최신 스냅샷 자동 로드
 syncSnapsFromGitHub();
