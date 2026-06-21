@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>토스 증권 포트폴리오</title>
+<title>리밸런싱 | 토스증권</title>
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
 <style>
 :root {
@@ -76,7 +76,7 @@ tr:hover td { background:var(--bg2); }
 
 <header>
   <div>
-    <h1>📈 토스 증권 포트폴리오</h1>
+    <h1>🏦 토스증권 리밸런싱</h1>
     <div id="last-update">로딩 중...</div>
   </div>
   <div style="display:flex;gap:8px;align-items:center">
@@ -154,7 +154,7 @@ tr:hover td { background:var(--bg2); }
 
 <script>
 const CORS_PROXY = 'https://corsproxy.io/?';
-const SNAPS_URL  = 'https://ew-jang.github.io/finance-dashboard/pf_snaps.json';
+const SNAPS_URL  = 'https://ew-jang.github.io/finance-dashboard/pf_snaps_toss.json';
 
 const REBAL = [
   { label:'🔴 하락장',   desc:'200MA 아래', color:'#ef4444', tqqq:  0, qqqm:20, usd:80 },
@@ -173,10 +173,10 @@ function toast(msg, ms=2800) {
 
 // ── Persistence ───────────────────────────────────────────────────────────────
 function loadSnaps() {
-  try { const s=localStorage.getItem('pf_snaps'); if(s) return JSON.parse(s); } catch {}
+  try { const s=localStorage.getItem('pf_snaps_toss'); if(s) return JSON.parse(s); } catch {}
   return [];
 }
-function saveSnaps(arr) { try { localStorage.setItem('pf_snaps', JSON.stringify(arr)); } catch {} }
+function saveSnaps(arr) { try { localStorage.setItem('pf_snaps_toss', JSON.stringify(arr)); } catch {} }
 
 // ── GitHub sync ───────────────────────────────────────────────────────────────
 async function syncSnapsFromGitHub() {
@@ -239,7 +239,7 @@ function initRebal(tqqqPx, qqqmPx, usdkrw, qqqmCloses, vixVal) {
 
   const el = document.getElementById('snap-date');
   if (!el.value) el.value = new Date().toISOString().slice(0,10);
-  try { const k=localStorage.getItem('rebal_krw'); if(k) document.getElementById('rebal-krw').value=k; } catch {}
+  try { const k=localStorage.getItem('rebal_krw_toss'); if(k) document.getElementById('rebal-krw').value=k; } catch {}
 
   updateRebalRec();
   renderWealthChart();
@@ -250,7 +250,7 @@ function updateRebalRec() {
   if (!_rd) return;
   const { tqqqPx, qqqmPx, usdkrw, regime, ma200, last, vixVal } = _rd;
   const krw = parseFloat(document.getElementById('rebal-krw').value) || 17_000_000;
-  try { localStorage.setItem('rebal_krw', krw); } catch {}
+  try { localStorage.setItem('rebal_krw_toss', krw); } catch {}
   const usd = krw / usdkrw;
   const a   = REBAL[regime];
 
@@ -422,7 +422,7 @@ function renderRebalTable() {
 function downloadSnaps(snaps) {
   const blob = new Blob([JSON.stringify(snaps,null,2)],{type:'application/json'});
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download='pf_snaps.json'; a.click();
+  a.href = URL.createObjectURL(blob); a.download='pf_snaps_toss.json'; a.click();
 }
 
 async function saveSnapshot() {

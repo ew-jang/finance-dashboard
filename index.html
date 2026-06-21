@@ -134,13 +134,23 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(.55) brightn
     <h1>📈 Portfolio Dashboard</h1>
     <div id="last-update">로딩 중...</div>
   </div>
-  <div style="display:flex;gap:8px">
-    <a href="portfolio.html" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
-       background:var(--bg2);border:1px solid var(--bd);border-radius:7px;color:var(--tx);
-       font-size:13px;font-weight:500;text-decoration:none">📈 내 포트폴리오</a>
-    <button class="btn btn-ref" style="width:auto" onclick="refresh()">↺ 새로고침</button>
-  </div>
+  <button class="btn btn-ref" style="width:auto" onclick="refresh()">↺ 새로고침</button>
 </header>
+
+<!-- Accounts -->
+<div class="card" style="padding:14px 20px;margin-bottom:16px">
+  <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-weight:500">계좌별 리밸런싱</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <a href="rebal_toss.html" style="display:flex;flex-direction:column;gap:3px;padding:10px 16px;
+       background:var(--bg2);border:1px solid var(--bd);border-radius:9px;
+       color:var(--tx);text-decoration:none;transition:border-color .15s;min-width:140px"
+       onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--bd)'">
+      <span style="font-size:13px;font-weight:600">🏦 토스증권</span>
+      <span style="font-size:11px;color:var(--muted)">S4 전략 · TQQQ·QQQM·USD</span>
+    </a>
+    <!-- 계좌 추가 시 여기에 카드 추가 -->
+  </div>
+</div>
 
 <!-- Top: F&G + Manage -->
 <div class="top-grid">
