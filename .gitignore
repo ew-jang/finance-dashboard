@@ -1,5 +1,6 @@
 alert.log
 my_holdings.json
+pf_snaps.json
 send_alert.sh
 signal_check.py
 *.pyc

@@ -875,19 +875,12 @@ function updateRebalRec() {
     `TQQQ $${tqqqPx.toFixed(2)} &nbsp;·&nbsp; QQQM $${qqqmPx.toFixed(2)} &nbsp;·&nbsp; 1$ = ${usdkrw.toFixed(1)}원`;
 }
 
-function exportHoldings(silent=false) {
-  const snaps = loadSnaps();
-  if (!snaps.length) return;
-  const s = snaps[snaps.length - 1];
-  const data = { tqqq: s.tqqq, qqqm: s.qqqm, usd: +s.usd.toFixed(0),
-                 updated: s.date,
-                 note: 'signal_check.py 리밸런싱 알림용. Finance_app 폴더에 저장.' };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+function downloadSnaps(snaps) {
+  const blob = new Blob([JSON.stringify(snaps, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'my_holdings.json';
+  a.download = 'pf_snaps.json';
   a.click();
-  if (!silent) toast('📥 my_holdings.json 다운로드 완료');
 }
 
 async function fetchPriceOnDate(ticker, dateStr) {
@@ -941,17 +934,11 @@ async function saveSnapshot() {
   stat.innerHTML=`<span style="color:var(--green)">✓ 저장 완료 — 총 ₩${krwFmt}만 ($${Math.round(totalUsd).toLocaleString()})</span>`;
   renderWealthChart();
   renderSnapList();
-  exportHoldings(true);
   writeToICloud(snaps).then(ok => {
     if (ok) {
       stat.innerHTML += ' &nbsp;<span style="color:#60a5fa;font-size:11px">☁️ iCloud 저장됨</span>';
     } else {
-      // Chrome 폴더 연결 없으면 pf_snaps.json 다운로드 (Safari download 위치를 iCloud Drive로 설정 시 자동 동기화)
-      const blob = new Blob([JSON.stringify(snaps,null,2)],{type:'application/json'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'pf_snaps.json';
-      a.click();
+      downloadSnaps(snaps);
     }
   });
 }
