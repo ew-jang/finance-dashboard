@@ -240,6 +240,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(.55) brightn
       </div>
       <div id="rebal-rec">—</div>
       <div id="rebal-prices" style="font-size:11px;color:var(--muted);margin-top:8px"></div>
+      <div id="current-holdings"></div>
     </div>
 
     <!-- Right: snapshot input -->
@@ -894,6 +895,51 @@ function updateRebalRec() {
 
   document.getElementById('rebal-prices').innerHTML =
     `TQQQ $${tqqqPx.toFixed(2)} &nbsp;·&nbsp; QQQM $${qqqmPx.toFixed(2)} &nbsp;·&nbsp; 1$ = ${usdkrw.toFixed(1)}원`;
+
+  // 현재 구성 (최신 스냅샷 기준 현재 시세 평가)
+  const snaps = loadSnaps();
+  const el2 = document.getElementById('current-holdings');
+  if (snaps.length && el2) {
+    const s = snaps[snaps.length - 1];
+    const curUsd = s.tqqq * tqqqPx + s.qqqm * qqqmPx + s.usd;
+    const curKrw = curUsd * usdkrw;
+
+    const dT = s.tqqq - tSh, dQ = s.qqqm - qSh, dU = s.usd - uAmt;
+    const delta = (n, unit) => {
+      if (Math.abs(n) < 0.5) return '';
+      const sign = n > 0 ? '+' : '';
+      const col = n > 0 ? '#22c55e' : '#ef4444';
+      return `<span style="font-size:10px;color:${col};margin-left:3px">(권장 대비 ${sign}${Math.round(n)}${unit})</span>`;
+    };
+
+    el2.innerHTML =
+      `<div style="font-size:11px;color:var(--muted);margin-top:16px;margin-bottom:6px">
+         현재 구성 <span style="opacity:.6">${s.date} 입력 · 현재 시세 평가</span>
+       </div>
+       <div style="display:flex;gap:8px;flex-wrap:wrap">
+         <div class="rec-card" style="border-left:3px solid #f97316">
+           <div class="rc-label" style="color:#f97316">TQQQ</div>
+           <div class="rc-val">${s.tqqq}<span style="font-size:12px;font-weight:400;color:var(--muted)">주</span></div>
+           <div class="rc-sub">$${(s.tqqq*tqqqPx).toFixed(0)} ${delta(dT,'주')}</div>
+         </div>
+         <div class="rec-card" style="border-left:3px solid #a855f7">
+           <div class="rc-label" style="color:#a855f7">QQQM</div>
+           <div class="rc-val">${s.qqqm}<span style="font-size:12px;font-weight:400;color:var(--muted)">주</span></div>
+           <div class="rc-sub">$${(s.qqqm*qqqmPx).toFixed(0)} ${delta(dQ,'주')}</div>
+         </div>
+         <div class="rec-card" style="border-left:3px solid #3b82f6">
+           <div class="rc-label" style="color:#3b82f6">USD</div>
+           <div class="rc-val" style="font-size:16px">$${Math.round(s.usd).toLocaleString()}</div>
+           <div class="rc-sub">₩${Math.round(s.usd*usdkrw/10000)}만 ${delta(dU,'$')}</div>
+         </div>
+       </div>
+       <div style="font-size:12px;color:var(--text);margin-top:8px;font-weight:600">
+         현재 평가액 &nbsp;$${Math.round(curUsd).toLocaleString()}
+         &nbsp;<span style="color:var(--green)">₩${Math.round(curKrw/10000).toLocaleString()}만</span>
+       </div>`;
+  } else if (el2) {
+    el2.innerHTML = '<div style="font-size:12px;color:var(--muted);margin-top:12px">보유 현황 저장 후 현재가 평가액이 표시됩니다</div>';
+  }
 }
 
 function downloadSnaps(snaps) {
