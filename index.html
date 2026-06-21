@@ -275,6 +275,19 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(.55) brightn
 
   <!-- Entry list -->
   <div id="snap-list"></div>
+
+  <!-- Data sync -->
+  <div style="display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)">
+    <button class="btn btn-ref" style="width:auto;padding:7px 14px;font-size:12px"
+            onclick="exportSnapData()">📤 데이터 내보내기</button>
+    <label class="btn btn-ref" style="width:auto;padding:7px 14px;font-size:12px;cursor:pointer;margin:0">
+      📥 데이터 가져오기
+      <input type="file" accept=".json" onchange="importSnapData(this)" style="display:none">
+    </label>
+    <span style="font-size:11px;color:var(--muted);align-self:center">
+      기기 간 데이터 이동 시 사용
+    </span>
+  </div>
 </div>
 
 <!-- Charts -->
@@ -975,6 +988,41 @@ function renderWealthChart() {
     legend:{x:0.01,y:1.12,orientation:'h',bgcolor:'rgba(0,0,0,0)',font:{size:11}},
     hovermode:'x unified', height:290,
   }, {responsive:true,displayModeBar:false});
+}
+
+function exportSnapData() {
+  const snaps = loadSnaps();
+  if (!snaps.length) { toast('저장된 데이터가 없습니다'); return; }
+  const blob = new Blob([JSON.stringify(snaps, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'pf_snaps.json';
+  a.click();
+  toast('📤 pf_snaps.json 다운로드 완료');
+}
+
+function importSnapData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error();
+      const merged = loadSnaps();
+      data.forEach(entry => {
+        const idx = merged.findIndex(s => s.date === entry.date);
+        if (idx >= 0) merged[idx] = entry; else merged.push(entry);
+      });
+      merged.sort((a, b) => a.date.localeCompare(b.date));
+      saveSnaps(merged);
+      renderWealthChart();
+      renderSnapList();
+      toast(`✓ ${data.length}개 기록 가져오기 완료`);
+    } catch { toast('파일 형식 오류'); }
+    input.value = '';
+  };
+  reader.readAsText(file);
 }
 
 function renderSnapList() {
