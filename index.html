@@ -1061,29 +1061,42 @@ async function writeToICloud(snaps) {
   } catch { return false; }
 }
 
+function _mergeSnapsFromText(text) {
+  const data = JSON.parse(text);
+  if (!Array.isArray(data)) throw new Error('format');
+  const merged = loadSnaps();
+  data.forEach(entry => {
+    const i = merged.findIndex(s => s.date === entry.date);
+    if (i >= 0) merged[i] = entry; else merged.push(entry);
+  });
+  merged.sort((a, b) => a.date.localeCompare(b.date));
+  saveSnaps(merged);
+  renderWealthChart();
+  renderSnapList();
+  toast(`✓ ${data.length}개 기록 불러옴`);
+}
+
 async function loadFromICloud() {
-  if (!window.showOpenFilePicker) {
-    toast('이 브라우저에서는 지원되지 않습니다'); return;
+  if (window.showOpenFilePicker) {
+    try {
+      const [fh] = await window.showOpenFilePicker({
+        types:[{description:'JSON',accept:{'application/json':['.json']}}],
+        excludeAcceptAllOption:true,
+      });
+      _mergeSnapsFromText(await (await fh.getFile()).text());
+    } catch(e) { if(e.name!=='AbortError') toast('불러오기 실패'); }
+  } else {
+    // Safari fallback: 일반 파일 선택 (iCloud Drive 접근 가능)
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.json,application/json';
+    inp.onchange = () => {
+      const file = inp.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => { try { _mergeSnapsFromText(e.target.result); } catch { toast('파일 형식 오류'); } };
+      reader.readAsText(file);
+    };
+    inp.click();
   }
-  try {
-    const [fh] = await window.showOpenFilePicker({
-      types:[{description:'JSON',accept:{'application/json':['.json']}}],
-      excludeAcceptAllOption:true,
-    });
-    const text = await (await fh.getFile()).text();
-    const data = JSON.parse(text);
-    if (!Array.isArray(data)) throw new Error('format');
-    const merged = loadSnaps();
-    data.forEach(entry => {
-      const i = merged.findIndex(s=>s.date===entry.date);
-      if (i>=0) merged[i]=entry; else merged.push(entry);
-    });
-    merged.sort((a,b)=>a.date.localeCompare(b.date));
-    saveSnaps(merged);
-    renderWealthChart();
-    renderSnapList();
-    toast(`✓ ${data.length}개 기록 불러옴`);
-  } catch(e) { if(e.name!=='AbortError') toast('불러오기 실패'); }
 }
 
 function renderSnapList() {
