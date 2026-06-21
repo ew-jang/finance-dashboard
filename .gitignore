@@ -1,7 +1,7 @@
 alert.log
 my_holdings.json
-pf_snaps.json
 send_alert.sh
+sync_snaps.sh
 signal_check.py
 *.pyc
 .DS_Store

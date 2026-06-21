@@ -795,12 +795,33 @@ const REBAL = [
 ];
 let _rd = null;
 
+const SNAPS_URL = 'https://ew-jang.github.io/finance-dashboard/pf_snaps.json';
+
 function loadSnaps() {
   try { const s=localStorage.getItem('pf_snaps'); if(s) return JSON.parse(s); } catch {}
   return [];
 }
 function saveSnaps(arr) {
   try { localStorage.setItem('pf_snaps', JSON.stringify(arr)); } catch {}
+}
+
+async function syncSnapsFromGitHub() {
+  try {
+    const res = await fetch(SNAPS_URL + '?t=' + Date.now());
+    if (!res.ok) return;
+    const remote = await res.json();
+    if (!Array.isArray(remote) || !remote.length) return;
+    const local = loadSnaps();
+    const merged = [...local];
+    remote.forEach(entry => {
+      const i = merged.findIndex(s => s.date === entry.date);
+      if (i >= 0) merged[i] = entry; else merged.push(entry);
+    });
+    merged.sort((a, b) => a.date.localeCompare(b.date));
+    saveSnaps(merged);
+    renderWealthChart();
+    renderSnapList();
+  } catch {}
 }
 
 function initRebal(tqqqPx, qqqmPx, usdkrw, qqqmCloses, vixVal) {
@@ -1170,6 +1191,9 @@ if (window.showDirectoryPicker) {
   document.getElementById('icloud-connect-btn').style.display = '';
 }
 _refreshICloudStatus();
+
+// GitHub에서 최신 스냅샷 자동 로드
+syncSnapsFromGitHub();
 
 refresh();
 </script>
