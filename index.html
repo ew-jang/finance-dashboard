@@ -15,7 +15,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
        background: var(--bg0); color: var(--tx); font-size: 14px; }
-.wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
 
 header { display: flex; justify-content: space-between; align-items: center;
          padding-bottom: 16px; border-bottom: 1px solid var(--bd); margin-bottom: 20px; }
@@ -25,104 +25,39 @@ header h1 { font-size: 22px; font-weight: 700; }
 .card { background: var(--bg1); border: 1px solid var(--bd); border-radius: 12px; padding: 20px; }
 .sec-title { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
 
-/* Top grid */
-.top-grid { display: grid; grid-template-columns: 1fr 280px; gap: 16px; margin-bottom: 20px; }
-@media(max-width:760px){ .top-grid { grid-template-columns: 1fr; } }
-
-/* Manage panel */
-.manage { display: flex; flex-direction: column; gap: 10px; }
-label.lbl { font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px; }
-input[type=text], select {
-  width: 100%; padding: 8px 10px;
-  background: var(--bg0); border: 1px solid var(--bd); border-radius: 7px;
-  color: var(--tx); font-size: 13px;
-}
-input[type=text]:focus, select:focus { outline: none; border-color: var(--blue); }
-hr.div { border: none; border-top: 1px solid var(--bd); }
 .btn { padding: 8px 14px; border-radius: 7px; border: none;
-       cursor: pointer; font-size: 13px; font-weight: 500; width: 100%; transition: opacity .15s; }
+       cursor: pointer; font-size: 13px; font-weight: 500; transition: opacity .15s; }
 .btn:hover { opacity: .8; }
-.btn-add  { background: var(--blue); color: #fff; }
-.btn-del  { background: var(--red);  color: #fff; }
 .btn-ref  { background: var(--bg2);  color: var(--tx); border: 1px solid var(--bd); }
 
+/* Top grid: overview + F&G */
+.top-grid { display: grid; grid-template-columns: 1fr 320px; gap: 16px; margin-bottom: 20px; }
+@media(max-width:820px){ .top-grid { grid-template-columns: 1fr; } }
+
 /* Table */
-.tbl-wrap { overflow-x: auto; margin-bottom: 20px; }
+.tbl-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
 th { padding: 9px 13px; color: var(--muted); font-size: 11px; font-weight: 500;
-     border-bottom: 1px solid var(--bd); white-space: nowrap; text-align: left; }
-td { padding: 9px 13px; border-bottom: 1px solid var(--bd); font-size: 13px; white-space: nowrap; }
+     border-bottom: 1px solid var(--bd); white-space: nowrap; text-align: right; }
+th:first-child { text-align: left; }
+td { padding: 11px 13px; border-bottom: 1px solid var(--bd); font-size: 13px; white-space: nowrap; text-align: right; }
+td:first-child { text-align: left; }
 tr:last-child td { border-bottom: none; }
-tr:hover td { background: var(--bg2); }
-
-.pos { color: var(--green); font-weight: 600; }
-.neg { color: var(--red);   font-weight: 600; }
-.rsi-ob { color: var(--red);   background: rgba(239,68,68,.12); border-radius: 4px; padding: 1px 6px; }
-.rsi-os { color: var(--green); background: rgba(34,197,94,.12);  border-radius: 4px; padding: 1px 6px; }
-.mdd-bad { color: var(--red);   font-weight: 600; }
-.mdd-mid { color: var(--orange); }
-.badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: 4px; }
-.kr { background: rgba(59,130,246,.2); color: var(--blue); }
-.us { background: rgba(168,85,247,.2); color: var(--purple); }
-.lev-tag { background: rgba(249,115,22,.2); color: var(--orange); }
-
-.legend { display: flex; gap: 16px; font-size: 11px; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
-
-/* Charts */
-.chart-item { margin-bottom: 10px; border: 1px solid var(--bd); border-radius: 10px; overflow: hidden; }
-.c-toggle { display: flex; justify-content: space-between; align-items: center;
-            padding: 11px 16px; background: var(--bg1); cursor: pointer; user-select: none; }
-.c-toggle:hover { background: var(--bg2); }
-.c-toggle .lname { font-weight: 600; }
-.arrow { display: inline-block; transition: transform .2s; }
-.c-toggle.open .arrow { transform: rotate(180deg); }
-.c-body { display: none; padding: 12px; background: var(--bg0); }
-.c-body.open { display: block; }
-
-.tabs { display: flex; gap: 4px; margin-bottom: 10px; }
-.tab-btn { padding: 5px 14px; border-radius: 6px; border: 1px solid var(--bd);
-           background: transparent; color: var(--muted); cursor: pointer; font-size: 12px; }
-.tab-btn.on { background: var(--bg2); color: var(--tx); border-color: var(--blue); }
-.tab-pane { display: none; }
-.tab-pane.on { display: block; }
+tbody tr:hover td { background: var(--bg2); }
+tr.total-row td { border-top: 2px solid var(--bd); font-weight: 700; font-size: 14px; border-bottom: none; }
+.acct-link { color: var(--tx); text-decoration: none; font-weight: 600; }
+.acct-link:hover { color: var(--blue); }
+.acct-sub { font-size: 11px; color: var(--muted); font-weight: 400; }
+.gain { color: var(--green); font-weight: 600; }
+.loss { color: var(--red); font-weight: 600; }
+.share-bar { height: 6px; border-radius: 3px; background: var(--bg0); overflow: hidden; margin-top: 5px; }
+.share-bar > span { display:block; height:100%; background: var(--blue); }
 
 /* Toast */
 #toast { position: fixed; bottom: 22px; right: 22px; padding: 10px 18px;
          background: var(--bg2); border: 1px solid var(--bd); border-radius: 8px;
          font-size: 13px; opacity: 0; transition: opacity .3s; z-index: 999; pointer-events: none; }
 #toast.show { opacity: 1; }
-
-.err-row td { color: var(--muted); }
-
-/* Buy signal */
-.sig-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 12px; }
-.sig-card { border: 2px solid var(--green); border-radius: 10px; padding: 14px;
-            background: rgba(34,197,94,.06); }
-.sig-ticker { font-size: 16px; font-weight: 700; color: var(--green); }
-.sig-name   { font-size: 12px; color: var(--muted); margin: 3px 0 10px; }
-.sig-cond   { font-size: 12px; line-height: 1.9; }
-.sig-none   { color: var(--muted); font-size: 13px; }
-.cok  { color: var(--green); }
-.cfail{ color: var(--muted); }
-.buy-badge  { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px;
-              font-weight:700; background:rgba(34,197,94,.18);  color:var(--green); letter-spacing:.3px; }
-.sell-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px;
-              font-weight:700; background:rgba(239,68,68,.18);  color:var(--red);   letter-spacing:.3px; }
-.sig-card.sell { border-color: var(--red); background: rgba(239,68,68,.06); }
-.sig-card.sell .sig-ticker { color: var(--red); }
-.sig-card.sell .sig-cond div { color: var(--red); }
-.cond-pip  { font-size:11px; display:inline-flex; gap:6px; }
-.cond-pip span { padding: 1px 5px; border-radius:3px; background:var(--bg0); }
-
-/* Inputs — dark theme */
-input[type=date], input[type=number] {
-  width:100%; padding:8px 10px;
-  background:var(--bg0); border:1px solid var(--bd); border-radius:7px;
-  color:var(--tx); font-size:13px;
-}
-input[type=date]:focus, input[type=number]:focus { outline:none; border-color:var(--blue); }
-input[type=date]::-webkit-calendar-picker-indicator { filter:invert(.55) brightness(1.2); cursor:pointer; }
-
 </style>
 </head>
 <body>
@@ -134,12 +69,12 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(.55) brightn
     <h1>📈 Portfolio Dashboard</h1>
     <div id="last-update">로딩 중...</div>
   </div>
-  <button class="btn btn-ref" style="width:auto" onclick="refresh()">↺ 새로고침</button>
+  <button class="btn btn-ref" onclick="refresh()">↺ 새로고침</button>
 </header>
 
 <!-- Accounts -->
 <div class="card" style="padding:14px 20px;margin-bottom:16px">
-  <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-weight:500">계좌별 리밸런싱</div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-weight:500">계좌 바로가기</div>
   <div style="display:flex;gap:10px;flex-wrap:wrap">
     <a href="rebal_toss.html" style="display:flex;flex-direction:column;gap:3px;padding:10px 16px;
        background:var(--bg2);border:1px solid var(--bd);border-radius:9px;
@@ -173,603 +108,160 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:invert(.55) brightn
   </div>
 </div>
 
-<!-- Top: F&G + Manage -->
+<!-- Overview + F&G -->
 <div class="top-grid">
+  <div class="card">
+    <div class="sec-title">💰 전체 계좌 현황 <span id="grand-total" style="font-size:13px;color:var(--green);font-weight:700;float:right"></span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>계좌</th><th>평가금액</th><th>비중</th><th>평가손익 (수익률)</th>
+        </tr></thead>
+        <tbody id="ov-body">
+          <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">로딩 중...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px">
+      ※ 실시간 시세로 환산한 평가액 (USD 계좌는 환율 적용). 손익은 매입단가가 있는 키움 계좌만 표시.
+    </div>
+  </div>
+
   <div class="card">
     <div class="sec-title">CNN Fear &amp; Greed Index</div>
     <div id="fg-gauge" style="height:240px"></div>
   </div>
-
-  <div class="card manage">
-    <div class="sec-title">종목 관리</div>
-    <div>
-      <label class="lbl">티커</label>
-      <input id="inp-ticker" type="text" placeholder="AAPL  /  005380.KS"
-             onkeydown="if(event.key==='Enter')addStock()">
-    </div>
-    <div>
-      <label class="lbl">이름 (선택)</label>
-      <input id="inp-name" type="text" placeholder="Apple"
-             onkeydown="if(event.key==='Enter')addStock()">
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
-      <input type="checkbox" id="inp-lev" style="width:auto;accent-color:var(--orange)">
-      <label for="inp-lev" style="font-size:12px;color:var(--tx);cursor:pointer">⚡ 레버리지 상품 (2x/3x ETF)</label>
-    </div>
-    <button class="btn btn-add" onclick="addStock()">➕ 추가</button>
-    <hr class="div">
-    <div>
-      <label class="lbl">제거할 종목</label>
-      <select id="sel-del"></select>
-    </div>
-    <button class="btn btn-del" onclick="removeStock()">🗑️ 제거</button>
-  </div>
-</div>
-
-<!-- Buy Signal -->
-<div class="card" style="margin-bottom:20px">
-  <div class="sec-title">🔔 매수 신호
-    <span style="font-size:11px;color:var(--muted);font-weight:400">
-      — 일반: RSI&lt;30·낙폭≥MDD×80%·F&amp;G≤30 &nbsp;|&nbsp; ⚡레버리지: 종가&gt;200MA·종가&lt;50MA(눌림)·VIX&lt;20 &nbsp;(3가지 중 2개 이상)
-    </span>
-  </div>
-  <div id="sig-container"><span class="sig-none">로딩 중...</span></div>
-</div>
-
-<!-- Sell Signal -->
-<div class="card" style="margin-bottom:20px">
-  <div class="sec-title">📤 매도/축소 신호
-    <span style="font-size:11px;color:var(--muted);font-weight:400">
-      — 일반: RSI&gt;70·낙폭≤MDD×20%·F&amp;G≥70 &nbsp;|&nbsp; ⚡레버리지: 종가&lt;200MA·데드크로스(50MA&lt;200MA)·VIX&gt;30 &nbsp;(3가지 중 2개 이상)
-    </span>
-  </div>
-  <div id="sell-container"><span class="sig-none">로딩 중...</span></div>
-</div>
-
-<!-- Table -->
-<div class="card tbl-wrap" style="margin-bottom:20px">
-  <div class="sec-title">📊 보유 종목 현황</div>
-  <table>
-    <thead>
-      <tr>
-        <th>티커</th><th>종목명</th><th>현재가</th>
-        <th>전일대비</th><th>RSI(14)</th><th>MDD(1Y)</th><th>현재 낙폭</th><th>신호</th>
-      </tr>
-    </thead>
-    <tbody id="tbl-body">
-      <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">로딩 중...</td></tr>
-    </tbody>
-  </table>
-  <div class="legend">
-    <span>🔴 RSI ≥ 70 과매수</span>
-    <span>⚪ RSI 30–70 중립</span>
-    <span>🟢 RSI ≤ 30 과매도</span>
-    <span>MDD = 1년 기준 최대 낙폭</span>
-  </div>
-</div>
-
-<!-- Charts -->
-<div class="card">
-  <div class="sec-title">📉 종목별 차트 (최근 1년)</div>
-  <div id="charts"></div>
 </div>
 
 </div><!-- /wrap -->
 <div id="toast"></div>
 
 <script>
-// ── Default stocks ────────────────────────────────────────────────────────────
-const DEFAULTS = {
-  'TSLA':      'Tesla',
-  'TQQQ':      'ProShares UltraPro QQQ',
-  'QLD':       'ProShares Ultra QQQ',
-  'GLD':       'SPDR Gold Trust',
-  '005930.KS': '삼성전자',
-};
-const DEFAULT_LEV = new Set(['TQQQ', 'QLD']);
+const BASE = 'https://ew-jang.github.io/finance-dashboard/';
 
-// ── Persistence ───────────────────────────────────────────────────────────────
-function loadStocks() {
-  try { const s = localStorage.getItem('pf_stocks'); if (s) return JSON.parse(s); } catch {}
-  return { ...DEFAULTS };
-}
-function saveStocks(s) { localStorage.setItem('pf_stocks', JSON.stringify(s)); }
-
-function loadLev() {
-  try { const s = localStorage.getItem('pf_lev'); if (s) return new Set(JSON.parse(s)); } catch {}
-  return new Set(DEFAULT_LEV);
-}
-function saveLev() { localStorage.setItem('pf_lev', JSON.stringify([...LEV])); }
-
-let STOCKS = loadStocks();
-let LEV    = loadLev();
+// 계좌 정의 — 새 계좌 추가 시 여기에 한 줄
+const ACCOUNTS = [
+  { name:'토스증권',  sub:'S4 전략',      href:'rebal_toss.html',       file:'pf_snaps_toss.json',     type:'toss' },
+  { name:'개인연금',  sub:'자산배분',      href:'rebal_pension.html',    file:'pf_snaps_pension.json',  type:'pension' },
+  { name:'키움 국내', sub:'국내·KRW',     href:'kiwoom.html?acct=kr',   file:'pf_snaps_kiwoomkr.json', type:'kiwoom', cur:'KRW' },
+  { name:'키움 해외', sub:'미국·USD',     href:'kiwoom.html?acct=us',   file:'pf_snaps_kiwoomus.json', type:'kiwoom', cur:'USD' },
+];
 
 // ── Fetch helpers ─────────────────────────────────────────────────────────────
 async function apiFetch(url) {
-  // direct first, then CORS proxy
-  try {
-    const r = await fetch(url);
-    if (!r.ok) throw 0;
-    return await r.json();
-  } catch {
-    const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(url));
-    if (!r.ok) throw new Error('fetch failed');
-    return await r.json();
-  }
+  try { const r = await fetch(url); if (!r.ok) throw 0; return await r.json(); }
+  catch { const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(url)); if (!r.ok) throw new Error('fail'); return await r.json(); }
 }
-
+async function fetchPrice(ticker) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=5d`;
+  try { const d = await apiFetch(url); const m = d.chart.result[0].meta; return m.regularMarketPrice ?? null; }
+  catch { return null; }
+}
 async function fetchFG() {
-  try {
-    const d = await apiFetch('https://production.dataviz.cnn.io/index/fearandgreed/graphdata');
-    return { score: Math.round(d.fear_and_greed.score), rating: d.fear_and_greed.rating };
-  } catch {
-    // fallback: alternative.me (crypto F&G – similar sentiment)
-    try {
-      const d = await apiFetch('https://api.alternative.me/fng/?limit=1');
-      const v = d.data[0];
-      return { score: +v.value, rating: v.value_classification };
-    } catch { return { score: null, rating: null }; }
-  }
+  try { const d = await apiFetch('https://production.dataviz.cnn.io/index/fearandgreed/graphdata');
+    return { score: Math.round(d.fear_and_greed.score), rating: d.fear_and_greed.rating }; }
+  catch { try { const d = await apiFetch('https://api.alternative.me/fng/?limit=1'); const v=d.data[0];
+      return { score:+v.value, rating:v.value_classification }; } catch { return { score:null, rating:null }; } }
 }
 
-async function fetchHistory(ticker) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1y&includePrePost=false`;
-  try {
-    const d = await apiFetch(url);
-    const res = d.chart.result[0];
-    const ts  = res.timestamp;
-    const q   = res.indicators.quote[0];
-    const ok  = i => q.close[i] != null && q.open[i] != null;
-    return {
-      dates:  ts.map((t,i) => ok(i) ? new Date(t*1000).toISOString().slice(0,10) : null).filter(Boolean),
-      open:   q.open.filter((_,i)   => ok(i)),
-      high:   q.high.filter((_,i)   => ok(i)),
-      low:    q.low.filter((_,i)    => ok(i)),
-      close:  q.close.filter((_,i)  => ok(i)),
-    };
-  } catch { return null; }
+// ── F&G gauge ─────────────────────────────────────────────────────────────────
+function fgColor(s){ return s<25?'#ef4444':s<45?'#f97316':s<55?'#eab308':s<75?'#22c55e':'#10b981'; }
+function fgLabel(s){ return s<25?'Extreme Fear 😨':s<45?'Fear 😟':s<55?'Neutral 😐':s<75?'Greed 😊':'Extreme Greed 🤑'; }
+function renderFG(fg){
+  const el=document.getElementById('fg-gauge');
+  if(!fg.score){ el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">데이터를 불러올 수 없습니다</div>'; return; }
+  const s=fg.score, c=fgColor(s);
+  Plotly.newPlot(el,[{ type:'indicator', mode:'gauge+number', value:s,
+    title:{text:fgLabel(s),font:{size:15,color:'#d8dce8'}}, number:{font:{size:42,color:c}},
+    gauge:{ axis:{range:[0,100],tickwidth:1,tickcolor:'#6b7280',tickvals:[0,25,45,55,75,100]},
+      bar:{color:c,thickness:0.25}, bgcolor:'transparent',
+      steps:[{range:[0,25],color:'rgba(239,68,68,0.13)'},{range:[25,45],color:'rgba(249,115,22,0.11)'},
+        {range:[45,55],color:'rgba(234,179,8,0.11)'},{range:[55,75],color:'rgba(34,197,94,0.11)'},
+        {range:[75,100],color:'rgba(16,185,129,0.14)'}],
+      threshold:{line:{color:'#fff',width:3},thickness:0.78,value:s} } }],
+    { paper_bgcolor:'transparent',plot_bgcolor:'transparent',margin:{t:40,b:0,l:20,r:20},height:240,font:{color:'#d8dce8'} },
+    {responsive:true,displayModeBar:false});
 }
 
-// ── Indicators ────────────────────────────────────────────────────────────────
-function calcRSI(c, p=14) {
-  const r = new Array(c.length).fill(null);
-  if (c.length <= p) return r;
-  let ag=0, al=0;
-  for (let i=1;i<=p;i++) { const d=c[i]-c[i-1]; d>0?ag+=d:al-=d; }
-  ag/=p; al/=p;
-  r[p] = 100 - 100/(1 + ag/(al||1e-9));
-  for (let i=p+1;i<c.length;i++) {
-    const d=c[i]-c[i-1];
-    ag=(ag*(p-1)+Math.max(d,0))/p;
-    al=(al*(p-1)+Math.max(-d,0))/p;
-    r[i]=100-100/(1+ag/(al||1e-9));
-  }
-  return r;
-}
+// ── Account overview ──────────────────────────────────────────────────────────
+const fmtKrw = n => '₩' + Math.round(n).toLocaleString('ko-KR');
+const fmtMan  = n => '₩' + Math.round(n/10000).toLocaleString('ko-KR') + '만';
 
-function calcMDD(c) {
-  let mx=c[0], mdd=0;
-  for (const v of c) { mx=Math.max(mx,v); mdd=Math.min(mdd,(v-mx)/mx); }
-  return mdd*100;
-}
+async function buildOverview() {
+  const files = await Promise.all(ACCOUNTS.map(a =>
+    fetch(BASE + a.file + '?t=' + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null)));
 
-function calcDD(c) {
-  let mx=c[0];
-  return c.map(v => { mx=Math.max(mx,v); return (v-mx)/mx*100; });
-}
+  // 필요한 티커 수집
+  const need = new Set();
+  ACCOUNTS.forEach((a, i) => {
+    const d = files[i]; if (!d) return;
+    if (a.type === 'toss')    { need.add('TQQQ'); need.add('QQQM'); need.add('USDKRW=X'); }
+    else if (a.type === 'pension') { need.add('379800.KS'); need.add('381170.KS'); }
+    else if (a.type === 'kiwoom')  { (d.holdings||[]).forEach(h => need.add(h.ticker)); if (a.cur==='USD') need.add('USDKRW=X'); }
+  });
+  const prices = {};
+  await Promise.all([...need].map(t => fetchPrice(t).then(p => { if (p!=null) prices[t]=p; })));
+  const usdkrw = prices['USDKRW=X'] ?? null;
 
-// last-value MA (for signal checks)
-function calcMA(c, p) {
-  if (c.length < p) return null;
-  return c.slice(-p).reduce((a,b) => a+b) / p;
-}
-
-// full MA array (for chart lines)
-function calcMAArr(c, p) {
-  return c.map((_, i, a) =>
-    i >= p-1 ? a.slice(i-p+1, i+1).reduce((s,v) => s+v) / p : null
-  );
-}
-
-// ── Fear & Greed Gauge ────────────────────────────────────────────────────────
-function fgColor(s) {
-  return s<25?'#ef4444':s<45?'#f97316':s<55?'#eab308':s<75?'#22c55e':'#10b981';
-}
-function fgLabel(s) {
-  return s<25?'Extreme Fear 😨':s<45?'Fear 😟':s<55?'Neutral 😐':s<75?'Greed 😊':'Extreme Greed 🤑';
-}
-
-function renderFG(fg) {
-  const el = document.getElementById('fg-gauge');
-  if (!fg.score) {
-    el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">데이터를 불러올 수 없습니다</div>';
-    return;
-  }
-  const s=fg.score, c=fgColor(s), lbl=fgLabel(s);
-  Plotly.newPlot(el, [{
-    type:'indicator', mode:'gauge+number', value:s,
-    title:{text:lbl, font:{size:15,color:'#d8dce8'}},
-    number:{font:{size:42,color:c}},
-    gauge:{
-      axis:{range:[0,100], tickwidth:1, tickcolor:'#6b7280',
-            tickvals:[0,25,45,55,75,100]},
-      bar:{color:c, thickness:0.25},
-      bgcolor:'transparent',
-      steps:[
-        {range:[0,25],   color:'rgba(239,68,68,0.13)'},
-        {range:[25,45],  color:'rgba(249,115,22,0.11)'},
-        {range:[45,55],  color:'rgba(234,179,8,0.11)'},
-        {range:[55,75],  color:'rgba(34,197,94,0.11)'},
-        {range:[75,100], color:'rgba(16,185,129,0.14)'},
-      ],
-      threshold:{line:{color:'#fff',width:3}, thickness:0.78, value:s},
-    },
-  }], {
-    paper_bgcolor:'transparent', plot_bgcolor:'transparent',
-    margin:{t:40,b:0,l:20,r:20}, height:240,
-    font:{color:'#d8dce8'},
-  }, {responsive:true, displayModeBar:false});
-}
-
-// ── Buy / Sell signals ────────────────────────────────────────────────────────
-function checkBuy(hist, fgScore) {
-  const c   = hist.close;
-  const rsi = calcRSI(c).at(-1);
-  const mdd = calcMDD(c);
-  const dd  = calcDD(c).at(-1);
-  const c1  = rsi != null && rsi < 30;
-  const c2  = dd <= mdd * 0.8;   // fallen ≥ 80% of MDD (near bottom)
-  const c3  = fgScore != null && fgScore <= 30;
-  return { buy: c1 && c2 && c3, c1, c2, c3, rsi, mdd, dd };
-}
-
-function checkSell(hist, fgScore) {
-  const c   = hist.close;
-  const rsi = calcRSI(c).at(-1);
-  const mdd = calcMDD(c);
-  const dd  = calcDD(c).at(-1);
-  const c1  = rsi != null && rsi > 70;
-  const c2  = dd >= mdd * 0.2;   // fallen ≤ 20% of MDD (near peak)
-  const c3  = fgScore != null && fgScore >= 70;
-  return { sell: c1 && c2 && c3, c1, c2, c3, rsi, mdd, dd };
-}
-
-// ── Leveraged ETF signals (trend-following) ───────────────────────────────────
-function checkBuyLev(hist, vix) {
-  const c    = hist.close;
-  const ma50  = calcMA(c, 50);
-  const ma200 = calcMA(c, 200);
-  const last  = c.at(-1);
-  const c1 = ma200 != null && last > ma200;          // 상승추세 (종가 > 200MA)
-  const c2 = ma50  != null && last < ma50;           // 눌림목 (종가 < 50MA)
-  const c3 = vix   != null && vix  < 20;            // 저변동성 (VIX < 20)
-  const cnt = [c1,c2,c3].filter(Boolean).length;
-  return { buy: cnt >= 2, c1, c2, c3, ma50, ma200, last, vix };
-}
-
-function checkSellLev(hist, vix) {
-  const c    = hist.close;
-  const ma50  = calcMA(c, 50);
-  const ma200 = calcMA(c, 200);
-  const last  = c.at(-1);
-  const c1 = ma200 != null && last  < ma200;                      // 추세 이탈
-  const c2 = ma50  != null && ma200 != null && ma50 < ma200;     // 데드크로스
-  const c3 = vix   != null && vix   > 30;                        // 극단 변동성
-  const cnt = [c1,c2,c3].filter(Boolean).length;
-  return { sell: cnt >= 2, c1, c2, c3, ma50, ma200, last, vix };
-}
-
-function renderBuySignals(rows, fgScore, vix) {
-  const el = document.getElementById('sig-container');
-  const hits = rows
-    .filter(r => r.hist)
-    .map(r => {
-      const sig = r.lev ? checkBuyLev(r.hist, vix) : checkBuy(r.hist, fgScore);
-      return { ...r, sig };
-    })
-    .filter(r => r.sig.buy);
-
-  if (!hits.length) {
-    el.innerHTML = '<span class="sig-none">현재 조건을 충족하는 종목 없음</span>';
-    return;
-  }
-  el.innerHTML = '<div class="sig-grid">' + hits.map(({ticker, name, sig, lev}) => {
-    const levTag = lev ? '<span class="badge lev-tag">⚡LEV</span>' : '';
-    const conds = lev
-      ? `<div class="${sig.c1?'cok':'cfail'}">${sig.c1?'✓':'✗'} 종가(${sig.last?.toFixed(2)}) ${sig.c1?'&gt;':'≤'} 200MA(${sig.ma200?.toFixed(2)})</div>
-         <div class="${sig.c2?'cok':'cfail'}">${sig.c2?'✓':'✗'} 종가 ${sig.c2?'&lt;':'≥'} 50MA(${sig.ma50?.toFixed(2)}) 눌림목</div>
-         <div class="${sig.c3?'cok':'cfail'}">${sig.c3?'✓':'✗'} VIX ${sig.vix?.toFixed(1)} ${sig.c3?'&lt; 20':'≥ 20'}</div>`
-      : `<div class="cok">✓ RSI ${sig.rsi.toFixed(1)} &lt; 30</div>
-         <div class="cok">✓ 낙폭 ${sig.dd.toFixed(1)}% ≥ MDD×80% (${(sig.mdd*0.8).toFixed(1)}%)</div>
-         <div class="cok">✓ F&amp;G ${fgScore} ≤ 30</div>`;
-    return `<div class="sig-card">
-      <div class="sig-ticker">🔔 ${ticker}${levTag}</div>
-      <div class="sig-name">${name}</div>
-      <div class="sig-cond">${conds}</div>
-    </div>`;
-  }).join('') + '</div>';
-}
-
-function renderSellSignals(rows, fgScore, vix) {
-  const el = document.getElementById('sell-container');
-  const hits = rows
-    .filter(r => r.hist)
-    .map(r => {
-      const sig = r.lev ? checkSellLev(r.hist, vix) : checkSell(r.hist, fgScore);
-      return { ...r, sig };
-    })
-    .filter(r => r.sig.sell);
-
-  if (!hits.length) {
-    el.innerHTML = '<span class="sig-none">현재 조건을 충족하는 종목 없음</span>';
-    return;
-  }
-  el.innerHTML = '<div class="sig-grid">' + hits.map(({ticker, name, sig, lev}) => {
-    const levTag = lev ? '<span class="badge lev-tag">⚡LEV</span>' : '';
-    const conds = lev
-      ? `<div class="${sig.c1?'cok':'cfail'}">${sig.c1?'✓':'✗'} 종가(${sig.last?.toFixed(2)}) ${sig.c1?'&lt;':'≥'} 200MA(${sig.ma200?.toFixed(2)})</div>
-         <div class="${sig.c2?'cok':'cfail'}">${sig.c2?'✓':'✗'} 데드크로스 50MA(${sig.ma50?.toFixed(2)}) ${sig.c2?'&lt;':'≥'} 200MA</div>
-         <div class="${sig.c3?'cok':'cfail'}">${sig.c3?'✓':'✗'} VIX ${sig.vix?.toFixed(1)} ${sig.c3?'&gt; 30':'≤ 30'}</div>`
-      : `<div class="cok">✓ RSI ${sig.rsi.toFixed(1)} &gt; 70</div>
-         <div class="cok">✓ 낙폭 ${sig.dd.toFixed(1)}% ≤ MDD×20% (${(sig.mdd*0.2).toFixed(1)}%)</div>
-         <div class="cok">✓ F&amp;G ${fgScore} ≥ 70</div>`;
-    return `<div class="sig-card sell">
-      <div class="sig-ticker">📤 ${ticker}${levTag}</div>
-      <div class="sig-name">${name}</div>
-      <div class="sig-cond">${conds}</div>
-    </div>`;
-  }).join('') + '</div>';
-}
-
-// ── Table ─────────────────────────────────────────────────────────────────────
-function renderTable(rows, fgScore, vix) {
-  document.getElementById('tbl-body').innerHTML = rows.map(({ticker,name,hist,lev}) => {
-    const isKR = ticker.endsWith('.KS');
-    const bdg     = isKR ? '<span class="badge kr">KR</span>' : '<span class="badge us">US</span>';
-    const levBdg  = lev  ? '<span class="badge lev-tag">⚡</span>' : '';
-    if (!hist) return `<tr class="err-row">
-      <td><b>${ticker}</b>${bdg}${levBdg}</td><td>${name}</td>
-      <td colspan="6">데이터 로드 실패</td></tr>`;
-
-    const c   = hist.close;
-    const cur = c.at(-1), prv = c.at(-2) ?? cur;
-    const chg = (cur-prv)/prv*100;
-    const rsi = calcRSI(c).at(-1);
-    const mdd = calcMDD(c);
-    const dd  = calcDD(c).at(-1);
-
-    const priceFmt = isKR
-      ? `₩${cur.toLocaleString('ko-KR',{maximumFractionDigits:0})}`
-      : `$${cur.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-    const chgFmt = `${chg>0?'+':''}${chg.toFixed(2)}%`;
-    const chgCls = chg>0?'pos':chg<0?'neg':'';
-    const rsiFmt = rsi!=null ? rsi.toFixed(1) : 'N/A';
-    const rsiCls = rsi>=70?'rsi-ob':rsi<=30?'rsi-os':'';
-    const mddFmt = `${mdd.toFixed(1)}%`;
-    const mddCls = mdd<-30?'mdd-bad':mdd<-15?'mdd-mid':'';
-    const ddFmt  = `${dd.toFixed(1)}%`;
-    const ddCls  = dd<-15?'mdd-bad':dd<-5?'mdd-mid':'';
-
-    let sigCell;
-    if (lev) {
-      const buy  = checkBuyLev(hist, vix);
-      const sell = checkSellLev(hist, vix);
-      sigCell = buy.buy
-        ? `<span class="buy-badge">🔔 매수</span>`
-        : sell.sell
-        ? `<span class="sell-badge">📤 매도</span>`
-        : `<span class="cond-pip">
-             <span class="${buy.c1?'cok':'cfail'}" title="종가>200MA">200MA↑</span>
-             <span class="${buy.c2?'cok':'cfail'}" title="종가<50MA 눌림목">50MA↓</span>
-             <span class="${buy.c3?'cok':'cfail'}" title="VIX<20">VIX</span>
-           </span>`;
-    } else {
-      const buy  = checkBuy(hist, fgScore);
-      const sell = checkSell(hist, fgScore);
-      sigCell = buy.buy
-        ? `<span class="buy-badge">🔔 매수</span>`
-        : sell.sell
-        ? `<span class="sell-badge">📤 매도</span>`
-        : `<span class="cond-pip">
-             <span class="${buy.c1?'cok':'cfail'}" title="RSI<30">RSI</span>
-             <span class="${buy.c2?'cok':'cfail'}" title="낙폭≥MDD×80%">DD</span>
-             <span class="${buy.c3?'cok':'cfail'}" title="F&G≤30">F&G</span>
-           </span>`;
+  // 계좌별 평가액(KRW) + 매입원가(있으면)
+  return ACCOUNTS.map((a, i) => {
+    const d = files[i]; let krw = null, cost = null;
+    if (d) {
+      if (a.type === 'toss') {
+        const s = d[d.length-1];
+        if (s && prices['TQQQ'] && prices['QQQM'] && usdkrw)
+          krw = (s.tqqq*prices['TQQQ'] + s.qqqm*prices['QQQM'] + s.usd) * usdkrw;
+      } else if (a.type === 'pension') {
+        const s = d[d.length-1];
+        if (s && prices['379800.KS'] && prices['381170.KS'])
+          krw = s.sp500*prices['379800.KS'] + s.tech10*prices['381170.KS'];
+      } else if (a.type === 'kiwoom') {
+        let v=0, c=0, ok=true;
+        (d.holdings||[]).forEach(h => { const px=prices[h.ticker]; if(px==null) ok=false; else v+=h.qty*px; c+=h.qty*h.avgCost; });
+        if (ok) { const fx = a.cur==='USD' ? (usdkrw||0) : 1; krw = v*fx; cost = c*fx; }
+      }
     }
+    return { ...a, krw, cost };
+  });
+}
 
+function renderOverview(rows) {
+  const total = rows.reduce((s,r) => s + (r.krw||0), 0);
+  document.getElementById('grand-total').textContent = '합계 ' + fmtMan(total);
+
+  document.getElementById('ov-body').innerHTML = rows.map(r => {
+    if (r.krw == null)
+      return `<tr><td><a class="acct-link" href="${r.href}">🏦 ${r.name}</a><div class="acct-sub">${r.sub}</div></td>
+              <td colspan="3" style="color:var(--muted)">시세 조회 실패</td></tr>`;
+    const pct = total ? (r.krw/total*100) : 0;
+    let pnl = '';
+    if (r.cost != null) {
+      const diff = r.krw - r.cost, ret = r.cost ? diff/r.cost*100 : 0;
+      const cls = diff>=0?'gain':'loss', sg = diff>=0?'+':'';
+      pnl = `<span class="${cls}">${sg}${fmtMan(diff)} <span style="font-weight:400">(${sg}${ret.toFixed(1)}%)</span></span>`;
+    } else pnl = '<span style="color:var(--muted)">—</span>';
     return `<tr>
-      <td><b>${ticker}</b>${bdg}${levBdg}</td>
-      <td>${name}</td>
-      <td><b>${priceFmt}</b></td>
-      <td class="${chgCls}"><b>${chgFmt}</b></td>
-      <td><span class="${rsiCls}">${rsiFmt}</span></td>
-      <td class="${mddCls}">${mddFmt}</td>
-      <td class="${ddCls}">${ddFmt}</td>
-      <td>${sigCell}</td>
+      <td><a class="acct-link" href="${r.href}">🏦 ${r.name}</a><div class="acct-sub">${r.sub}</div></td>
+      <td><b>${fmtMan(r.krw)}</b></td>
+      <td>${pct.toFixed(1)}%<div class="share-bar"><span style="width:${pct}%"></span></div></td>
+      <td>${pnl}</td>
     </tr>`;
-  }).join('');
-}
-
-// ── Charts ────────────────────────────────────────────────────────────────────
-const pBase = {
-  paper_bgcolor:'transparent', plot_bgcolor:'transparent',
-  font:{color:'#d8dce8', size:11},
-  xaxis:{gridcolor:'#2a2d3e', linecolor:'#2a2d3e'},
-  yaxis:{gridcolor:'#2a2d3e', linecolor:'#2a2d3e'},
-  margin:{t:10,b:36,l:58,r:10},
-  showlegend:false,
-};
-
-function buildMainChart(id, hist, isLev) {
-  const rsi = calcRSI(hist.close);
-  const traces = [
-    {
-      type:'candlestick', x:hist.dates,
-      open:hist.open, high:hist.high, low:hist.low, close:hist.close,
-      increasing:{line:{color:'#22c55e'},fillcolor:'#22c55e'},
-      decreasing:{line:{color:'#ef4444'},fillcolor:'#ef4444'},
-      xaxis:'x', yaxis:'y',
-    },
-    {
-      type:'scatter', x:hist.dates, y:rsi, name:'RSI(14)',
-      line:{color:'#3b82f6',width:1.5}, xaxis:'x', yaxis:'y2',
-    },
-  ];
-  if (isLev) {
-    traces.push({
-      type:'scatter', x:hist.dates, y:calcMAArr(hist.close,50), name:'50MA',
-      line:{color:'#f97316',width:1.3,dash:'dot'}, xaxis:'x', yaxis:'y',
-    });
-    traces.push({
-      type:'scatter', x:hist.dates, y:calcMAArr(hist.close,200), name:'200MA',
-      line:{color:'#a855f7',width:1.3,dash:'dot'}, xaxis:'x', yaxis:'y',
-    });
-  }
-  Plotly.newPlot(id, traces, {
-    ...pBase,
-    xaxis:{...pBase.xaxis, rangeslider:{visible:false}},
-    yaxis:{gridcolor:'#2a2d3e', linecolor:'#2a2d3e', domain:[0.36,1]},
-    yaxis2:{gridcolor:'#2a2d3e', linecolor:'#2a2d3e', domain:[0,0.3],
-            range:[0,100], title:{text:'RSI',font:{size:10}}},
-    shapes:[
-      {type:'line',x0:hist.dates[0],x1:hist.dates.at(-1),y0:70,y1:70,
-       yref:'y2',line:{color:'rgba(239,68,68,.5)',width:1,dash:'dot'}},
-      {type:'line',x0:hist.dates[0],x1:hist.dates.at(-1),y0:30,y1:30,
-       yref:'y2',line:{color:'rgba(34,197,94,.5)',width:1,dash:'dot'}},
-    ],
-    height:420,
-  }, {responsive:true,displayModeBar:false});
-}
-
-function buildDDChart(id, hist) {
-  const dd   = calcDD(hist.close);
-  const mddV = Math.min(...dd);
-  const mddI = dd.indexOf(mddV);
-  Plotly.newPlot(id, [{
-    type:'scatter', x:hist.dates, y:dd,
-    fill:'tozeroy', fillcolor:'rgba(239,68,68,.18)',
-    line:{color:'#ef4444',width:1.5},
-  }], {
-    ...pBase,
-    yaxis:{...pBase.yaxis, title:{text:'Drawdown (%)',font:{size:11}}},
-    annotations:[{
-      x:hist.dates[mddI], y:mddV,
-      text:`  MDD: ${mddV.toFixed(1)}%`,
-      showarrow:true, arrowhead:2, arrowcolor:'#ef4444',
-      bgcolor:'#1c1f2e', bordercolor:'#ef4444',
-      font:{color:'#ef4444',size:12},
-    }],
-    height:260,
-  }, {responsive:true,displayModeBar:false});
-}
-
-function renderCharts(rows) {
-  const wrap = document.getElementById('charts');
-  wrap.innerHTML = '';
-  for (const {ticker, name, hist, lev} of rows) {
-    if (!hist) continue;
-    const div = document.createElement('div');
-    div.className = 'chart-item';
-    div.innerHTML = `
-      <div class="c-toggle" onclick="toggleC('${ticker}',this)">
-        <span class="lname">${name} <span style="color:var(--muted);font-weight:400">(${ticker})</span></span>
-        <span class="arrow">▼</span>
-      </div>
-      <div class="c-body" id="cb-${ticker}">
-        <div class="tabs">
-          <button class="tab-btn on" onclick="switchTab('${ticker}','main',this)">주가 &amp; RSI</button>
-          <button class="tab-btn"    onclick="switchTab('${ticker}','dd',this)">Drawdown</button>
-        </div>
-        <div class="tab-pane on" id="tp-${ticker}-main"><div id="cm-${ticker}" style="height:420px"></div></div>
-        <div class="tab-pane"    id="tp-${ticker}-dd">  <div id="cd-${ticker}" style="height:260px"></div></div>
-      </div>`;
-    wrap.appendChild(div);
-    setTimeout(() => { buildMainChart(`cm-${ticker}`, hist, lev); buildDDChart(`cd-${ticker}`, hist); }, 0);
-  }
-}
-
-function toggleC(t, btn) {
-  btn.classList.toggle('open');
-  document.getElementById(`cb-${t}`).classList.toggle('open');
-}
-
-function switchTab(t, tab, btn) {
-  const cb = document.getElementById(`cb-${t}`);
-  cb.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
-  cb.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
-  btn.classList.add('on');
-  document.getElementById(`tp-${t}-${tab}`).classList.add('on');
-}
-
-// ── Stock management ──────────────────────────────────────────────────────────
-function syncSelect() {
-  document.getElementById('sel-del').innerHTML =
-    '<option value="">-- 선택 --</option>' +
-    Object.entries(STOCKS).map(([t,n])=>
-      `<option value="${t}">${t} (${n})${LEV.has(t)?' ⚡':''}</option>`
-    ).join('');
-}
-
-function addStock() {
-  const t = document.getElementById('inp-ticker').value.trim().toUpperCase();
-  const n = document.getElementById('inp-name').value.trim() || t;
-  const isLev = document.getElementById('inp-lev').checked;
-  if (!t) { toast('티커를 입력하세요'); return; }
-  STOCKS[t] = n;
-  saveStocks(STOCKS);
-  if (isLev) LEV.add(t); else LEV.delete(t);
-  saveLev();
-  document.getElementById('inp-ticker').value = '';
-  document.getElementById('inp-name').value   = '';
-  document.getElementById('inp-lev').checked  = false;
-  toast(`✓ ${t} 추가됨${isLev?' (⚡레버리지)':''}`);
-  refresh();
-}
-
-function removeStock() {
-  const t = document.getElementById('sel-del').value;
-  if (!t) { toast('종목을 선택하세요'); return; }
-  delete STOCKS[t];
-  LEV.delete(t);
-  saveStocks(STOCKS);
-  saveLev();
-  toast(`✓ ${t} 제거됨`);
-  refresh();
+  }).join('') +
+    `<tr class="total-row"><td>전체 합계</td><td>${fmtMan(total)}</td><td>100%</td><td></td></tr>`;
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 let _tid;
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(_tid); _tid = setTimeout(()=>el.classList.remove('show'), 2500);
-}
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(_tid); _tid=setTimeout(()=>el.classList.remove('show'),2500); }
 
+// ── Refresh ───────────────────────────────────────────────────────────────────
 async function refresh() {
   document.getElementById('last-update').textContent = '데이터 로딩 중...';
-
-  const tickers = Object.keys(STOCKS);
-  const [fg, vixHist, ...hists] = await Promise.all([
-    fetchFG(),
-    fetchHistory('^VIX'),
-    ...tickers.map(fetchHistory),
-  ]);
-
-  const vix = vixHist?.close?.at(-1) ?? null;
-  const rows = tickers.map((ticker, i) => ({
-    ticker, name: STOCKS[ticker], hist: hists[i], lev: LEV.has(ticker)
-  }));
-
+  const [fg, ov] = await Promise.all([ fetchFG(), buildOverview() ]);
   renderFG(fg);
-  renderBuySignals(rows, fg.score, vix);
-  renderSellSignals(rows, fg.score, vix);
-  renderTable(rows, fg.score, vix);
-  renderCharts(rows);
-  syncSelect();
-
-  const vixStr = vix != null ? `  ·  VIX: ${vix.toFixed(1)}` : '';
+  renderOverview(ov);
   document.getElementById('last-update').textContent =
-    `마지막 업데이트: ${new Date().toLocaleString('ko-KR')}  ·  매 1시간 자동 갱신${vixStr}`;
+    `마지막 업데이트: ${new Date().toLocaleString('ko-KR')}  ·  매 1시간 자동 갱신`;
 }
 
 setInterval(refresh, 60 * 60 * 1000);
