@@ -196,6 +196,7 @@ const LSKEY = 'kiwoom_' + ACCT;
 let HOLDINGS = [];     // [{name,ticker,qty,avgCost}]
 let PRICES   = {};     // ticker -> 현재가 (해당 통화)
 let USDKRW   = null;
+let CASH     = 0;      // 현금잔고 (해당 통화)
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function toast(msg, ms=2600){ const e=document.getElementById('toast'); e.textContent=msg; e.classList.add('show'); setTimeout(()=>e.classList.remove('show'),ms); }
@@ -218,11 +219,12 @@ async function syncFromGitHub(){
     if(!res.ok) return;
     const data = await res.json();
     if(data && Array.isArray(data.holdings)) HOLDINGS = data.holdings;
+    if(data && data.cash != null) CASH = data.cash;
   }catch{}
 }
 
 // ── Data file I/O ─────────────────────────────────────────────────────────────
-function buildFileObj(){ return { label:CFG.label, sub:CFG.sub, currency:CFG.cur, holdings:HOLDINGS }; }
+function buildFileObj(){ return { label:CFG.label, sub:CFG.sub, currency:CFG.cur, cash:CASH, holdings:HOLDINGS }; }
 function downloadFile(){
   const blob=new Blob([JSON.stringify(buildFileObj(),null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=CFG.file; a.click();
@@ -245,11 +247,12 @@ function render(){
   // 합계
   let totBuy=0, totEval=0;
   HOLDINGS.forEach(h=>{ const px=PRICES[h.ticker]; totBuy+=h.qty*h.avgCost; if(px!=null) totEval+=h.qty*px; });
+  const totEvalWithCash = totEval + CASH;
   const totPnl=totEval-totBuy, totRet=totBuy?totPnl/totBuy*100:0;
   const cls=totPnl>=0?'gain':'loss', sign=totPnl>=0?'+':'';
 
   const krwLine = (CFG.cur==='USD' && USDKRW)
-    ? `<div class="s-sub">${fmtKrwMan(totEval*USDKRW)} (환율 ${USDKRW.toLocaleString()})</div>` : '';
+    ? `<div class="s-sub">${fmtKrwMan(totEvalWithCash*USDKRW)} (환율 ${USDKRW.toLocaleString()})</div>` : '';
 
   document.getElementById('summary').innerHTML =
     `<div>
@@ -263,9 +266,9 @@ function render(){
        <div class="s-sub">${CFG.cur==='USD'&&USDKRW?fmtKrwMan(totBuy*USDKRW):'&nbsp;'}</div>
      </div>
      <div>
-       <div class="s-label">총 평가</div>
-       <div class="s-val">${fmtCur(totEval)}</div>
-       ${krwLine || '<div class="s-sub">&nbsp;</div>'}
+       <div class="s-label">총 평가 (현금 포함)</div>
+       <div class="s-val">${fmtCur(totEvalWithCash)}</div>
+       ${CASH ? `<div class="s-sub">현금 ${fmtCur(CASH)}</div>` : (krwLine || '<div class="s-sub">&nbsp;</div>')}
      </div>`;
 
   // 행

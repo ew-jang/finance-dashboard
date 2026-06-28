@@ -209,16 +209,26 @@ async function buildOverview() {
     if (d) {
       if (a.type === 'toss') {
         const s = d[d.length-1];
-        if (s && prices['TQQQ'] && prices['QQQM'] && usdkrw)
+        if (s && prices['TQQQ'] && prices['QQQM'] && usdkrw) {
           krw = (s.tqqq*prices['TQQQ'] + s.qqqm*prices['QQQM'] + s.usd) * usdkrw;
+          if (s.costKrw != null) cost = s.costKrw;
+        }
       } else if (a.type === 'pension') {
         const s = d[d.length-1];
-        if (s && prices['379800.KS'] && prices['381170.KS'])
+        if (s && prices['379800.KS'] && prices['381170.KS']) {
           krw = s.sp500*prices['379800.KS'] + s.tech10*prices['381170.KS'];
+          if (s.sp500AvgCost != null && s.tech10AvgCost != null)
+            cost = s.sp500*s.sp500AvgCost + s.tech10*s.tech10AvgCost;
+        }
       } else if (a.type === 'kiwoom') {
         let v=0, c=0, ok=true;
         (d.holdings||[]).forEach(h => { const px=prices[h.ticker]; if(px==null) ok=false; else v+=h.qty*px; c+=h.qty*h.avgCost; });
-        if (ok) { const fx = a.cur==='USD' ? (usdkrw||0) : 1; krw = v*fx; cost = c*fx; }
+        if (ok) {
+          const fx = a.cur==='USD' ? (usdkrw||0) : 1;
+          const cashAmt = d.cash || 0;
+          krw = (v + cashAmt) * fx;
+          cost = (c + cashAmt) * fx;
+        }
       }
     }
     return { ...a, krw, cost };
