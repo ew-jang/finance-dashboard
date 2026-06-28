@@ -1,0 +1,12 @@
+{
+  "label": "키움 해외",
+  "sub": "5517-1385 위탁종합",
+  "currency": "USD",
+  "holdings": [
+    { "name": "금 SPDR ETF", "ticker": "GLD", "qty": 20, "avgCost": 350.36 },
+    { "name": "QQQ 2배 (QLD)", "ticker": "QLD", "qty": 180, "avgCost": 70.1102 },
+    { "name": "반도체 3배 (SOXL)", "ticker": "SOXL", "qty": 20, "avgCost": 182.155 },
+    { "name": "QQQ 3배 (TQQQ)", "ticker": "TQQQ", "qty": 150, "avgCost": 42.5282 },
+    { "name": "테슬라 (TSLA)", "ticker": "TSLA", "qty": 33, "avgCost": 431.3129 }
+  ]
+}
