@@ -506,6 +506,7 @@ if(window.showDirectoryPicker) document.getElementById('icloud-connect-btn').sty
   _refreshICloudStatus();
   render();
   await refresh();
+  setInterval(refresh, 60 * 60 * 1000);
 })();
 </script>
 </body>

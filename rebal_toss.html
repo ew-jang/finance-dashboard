@@ -605,6 +605,7 @@ if (window.showDirectoryPicker) document.getElementById('icloud-connect-btn').st
 _refreshICloudStatus();
 syncSnapsFromGitHub();
 refresh();
+setInterval(refresh, 60 * 60 * 1000);
 </script>
 </body>
 </html>
