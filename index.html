@@ -203,15 +203,16 @@ async function buildOverview() {
   await Promise.all([...need].map(t => fetchPrice(t).then(p => { if (p!=null) prices[t]=p; })));
   const usdkrw = prices['USDKRW=X'] ?? null;
 
-  // 계좌별 평가액(KRW) + 매입원가(있으면)
+  // 계좌별 평가액(KRW) + 매입원가(있으면) + 현금(있으면)
   return ACCOUNTS.map((a, i) => {
-    const d = files[i]; let krw = null, cost = null;
+    const d = files[i]; let krw = null, cost = null, cashKrw = null;
     if (d) {
       if (a.type === 'toss') {
         const s = d[d.length-1];
         if (s && prices['TQQQ'] && prices['QQQM'] && usdkrw) {
           krw = (s.tqqq*prices['TQQQ'] + s.qqqm*prices['QQQM'] + s.usd) * usdkrw;
           if (s.costKrw != null) cost = s.costKrw;
+          if (s.usd) cashKrw = s.usd * usdkrw;
         }
       } else if (a.type === 'pension') {
         const s = d[d.length-1];
@@ -228,10 +229,11 @@ async function buildOverview() {
           const cashAmt = d.cash || 0;
           krw = (v + cashAmt) * fx;
           cost = (c + cashAmt) * fx;
+          if (cashAmt) cashKrw = cashAmt * fx;
         }
       }
     }
-    return { ...a, krw, cost };
+    return { ...a, krw, cost, cashKrw };
   });
 }
 
@@ -252,7 +254,7 @@ function renderOverview(rows) {
     } else pnl = '<span style="color:var(--muted)">—</span>';
     return `<tr>
       <td><a class="acct-link" href="${r.href}">🏦 ${r.name}</a><div class="acct-sub">${r.sub}</div></td>
-      <td><b>${fmtMan(r.krw)}</b></td>
+      <td><b>${fmtMan(r.krw)}</b>${r.cashKrw ? `<div class="acct-sub">현금 ${fmtMan(r.cashKrw)}</div>` : ''}</td>
       <td>${pct.toFixed(1)}%<div class="share-bar"><span style="width:${pct}%"></span></div></td>
       <td>${pnl}</td>
     </tr>`;
