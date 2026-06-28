@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>리밸런싱 | 개인연금</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+<style>
+:root {
+  --bg0:#0b0d14; --bg1:#141720; --bg2:#1c1f2e;
+  --bd:#2a2d3e; --tx:#d8dce8; --muted:#6b7280;
+  --green:#22c55e; --red:#ef4444; --blue:#3b82f6;
+  --orange:#f97316; --purple:#a855f7; --teal:#14b8a6;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+       background:var(--bg0); color:var(--tx); font-size:14px; }
+.wrap { max-width:900px; margin:0 auto; padding:20px; }
+
+header { display:flex; justify-content:space-between; align-items:center;
+         padding-bottom:16px; border-bottom:1px solid var(--bd); margin-bottom:20px; }
+header h1 { font-size:20px; font-weight:700; }
+#last-update { color:var(--muted); font-size:12px; margin-top:2px; }
+
+.back-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px;
+            background:var(--bg2); border:1px solid var(--bd); border-radius:7px;
+            color:var(--tx); font-size:13px; font-weight:500; text-decoration:none;
+            cursor:pointer; transition:opacity .15s; }
+.back-btn:hover { opacity:.8; }
+
+.card { background:var(--bg1); border:1px solid var(--bd); border-radius:12px; padding:20px; margin-bottom:20px; }
+.sec-title { font-size:15px; font-weight:600; margin-bottom:14px; }
+label.lbl { font-size:11px; color:var(--muted); display:block; margin-bottom:4px; }
+
+.btn { padding:8px 14px; border-radius:7px; border:none;
+       cursor:pointer; font-size:13px; font-weight:500; width:100%; transition:opacity .15s; }
+.btn:hover { opacity:.8; }
+.btn-add { background:var(--blue); color:#fff; }
+.btn-ref { background:var(--bg2); color:var(--tx); border:1px solid var(--bd); }
+
+input[type=date], input[type=number] {
+  width:100%; padding:8px 10px;
+  background:var(--bg0); border:1px solid var(--bd); border-radius:7px;
+  color:var(--tx); font-size:13px;
+}
+input[type=date]:focus, input[type=number]:focus { outline:none; border-color:var(--blue); }
+input[type=date]::-webkit-calendar-picker-indicator { filter:invert(.55) brightness(1.2); cursor:pointer; }
+input[type=range] { width:100%; accent-color:var(--teal); }
+
+.tracker-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:18px; }
+@media(max-width:680px){ .tracker-grid { grid-template-columns:1fr; } }
+
+.rec-card { flex:1; min-width:120px; padding:12px; border-radius:8px;
+            background:var(--bg2); }
+.rec-card .rc-label { font-size:11px; margin-bottom:4px; }
+.rec-card .rc-val   { font-size:18px; font-weight:700; line-height:1.2; }
+.rec-card .rc-sub   { font-size:11px; color:var(--muted); margin-top:3px; }
+
+.bar { height:22px; border-radius:5px; overflow:hidden; display:flex; background:var(--bg0); border:1px solid var(--bd); }
+.bar span { display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#000; white-space:nowrap; }
+
+.tbl-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+th { padding:9px 13px; color:var(--muted); font-size:11px; font-weight:500;
+     border-bottom:1px solid var(--bd); white-space:nowrap; text-align:left; }
+td { padding:9px 13px; border-bottom:1px solid var(--bd); font-size:13px; white-space:nowrap; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:var(--bg2); }
+#snap-list th, #snap-list td:not(:first-child) { text-align:right; }
+.pos { color:var(--green); font-weight:600; }
+
+#toast { position:fixed; bottom:22px; right:22px; padding:10px 18px;
+         background:var(--bg2); border:1px solid var(--bd); border-radius:8px;
+         font-size:13px; opacity:0; transition:opacity .3s; z-index:999; pointer-events:none; }
+#toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>🏦 개인연금 리밸런싱</h1>
+    <div id="last-update">로딩 중...</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="btn btn-ref" style="width:auto" onclick="refresh()">↺ 새로고침</button>
+    <a class="back-btn" href="index.html">← 대시보드</a>
+  </div>
+</header>
+
+<div class="card">
+  <div class="tracker-grid">
+    <!-- Left: target + rebalance recommendation -->
+    <div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">전략 · 코어-새틀라이트 (전략적 자산배분)</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+        <span style="font-size:12px;color:var(--teal);font-weight:600">목표 — S&amp;P500 <span id="t-sp">70</span>%</span>
+        <span style="font-size:12px;color:var(--purple);font-weight:600">Tech10 <span id="t-tech">30</span>%</span>
+      </div>
+      <input type="range" id="target-sp" min="50" max="90" step="5" value="70" oninput="updateTarget()">
+      <div style="display:flex;align-items:center;gap:8px;margin:10px 0 6px">
+        <span style="font-size:11px;color:var(--muted)">리밸런싱 밴드 ±</span>
+        <input type="number" id="band" value="5" min="1" max="15" style="width:60px" oninput="updateTarget()">
+        <span style="font-size:11px;color:var(--muted)">%p 이탈 시 조정</span>
+      </div>
+
+      <div id="rebal-rec" style="margin-top:12px">—</div>
+      <div id="rebal-prices" style="font-size:11px;color:var(--muted);margin-top:10px"></div>
+    </div>
+
+    <!-- Right: holdings input -->
+    <div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">보유 현황 입력 <span style="font-size:10px">(날짜별 저장 · 같은 날짜는 덮어씀)</span></div>
+      <div style="display:grid;gap:8px">
+        <div>
+          <label class="lbl">날짜</label>
+          <input type="date" id="snap-date">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <label class="lbl">KODEX S&amp;P500 (주)</label>
+            <input type="number" id="snap-sp500" placeholder="0" min="0" value="1095">
+          </div>
+          <div>
+            <label class="lbl">TIGER 미국TOP10 (주)</label>
+            <input type="number" id="snap-tech10" placeholder="0" min="0" value="464">
+          </div>
+        </div>
+        <button class="btn btn-add" onclick="saveSnapshot()">📌 저장</button>
+        <div id="snap-status" style="font-size:12px;min-height:18px"></div>
+      </div>
+      <div id="current-holdings" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  <!-- Wealth chart -->
+  <div id="wealth-chart"></div>
+
+  <!-- Entry list -->
+  <div id="snap-list"></div>
+
+  <!-- iCloud sync -->
+  <div style="display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd);flex-wrap:wrap">
+    <span style="font-size:12px;color:var(--muted)">☁️ iCloud Drive</span>
+    <span id="icloud-status" style="font-size:12px"></span>
+    <button id="icloud-connect-btn" class="btn btn-ref"
+            style="display:none;width:auto;padding:6px 12px;font-size:12px"
+            onclick="connectICloud()">폴더 연결 (Mac 최초 1회)</button>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+<div id="toast"></div>
+
+<script>
+const CORS_PROXY = 'https://corsproxy.io/?';
+const SNAPS_URL  = 'https://ew-jang.github.io/finance-dashboard/pf_snaps_pension.json';
+
+// 보유 ETF (모두 KRW 거래)
+const SP500_TICKER  = '379800.KS';   // KODEX 미국S&P500
+const TECH10_TICKER = '381170.KS';   // TIGER 미국테크TOP10 INDXX
+let _pd = null;   // { spPx, techPx }
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, ms=2800) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), ms);
+}
+
+// ── Persistence ───────────────────────────────────────────────────────────────
+function loadSnaps() {
+  try { const s=localStorage.getItem('pf_snaps_pension'); if(s) return JSON.parse(s); } catch {}
+  return [];
+}
+function saveSnaps(arr) { try { localStorage.setItem('pf_snaps_pension', JSON.stringify(arr)); } catch {} }
+
+// ── GitHub sync ───────────────────────────────────────────────────────────────
+async function syncSnapsFromGitHub() {
+  try {
+    const res = await fetch(SNAPS_URL + '?t=' + Date.now());
+    if (!res.ok) return;
+    const remote = await res.json();
+    if (!Array.isArray(remote) || !remote.length) return;
+    const merged = loadSnaps();
+    remote.forEach(entry => {
+      const i = merged.findIndex(s => s.date === entry.date);
+      if (i >= 0) merged[i] = entry; else merged.push(entry);
+    });
+    merged.sort((a, b) => a.date.localeCompare(b.date));
+    saveSnaps(merged);
+    renderWealthChart();
+    renderSnapList();
+  } catch {}
+}
+
+// ── API ───────────────────────────────────────────────────────────────────────
+async function apiFetch(url) {
+  try { return await (await fetch(url)).json(); } catch {}
+  return (await fetch(CORS_PROXY + encodeURIComponent(url))).json();
+}
+async function fetchPrice(ticker) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=5d`;
+  try {
+    const d = await apiFetch(url);
+    return d.chart.result[0].meta.regularMarketPrice ?? null;
+  } catch { return null; }
+}
+async function fetchPriceOnDate(ticker, dateStr) {
+  const p1 = Math.floor(new Date(dateStr+'T00:00:00Z').getTime()/1000);
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?period1=${p1}&period2=${p1+7*86400}&interval=1d`;
+  try {
+    const d = await apiFetch(url);
+    return d.chart.result[0].indicators.quote[0].close.find(c => c!=null) ?? null;
+  } catch { return null; }
+}
+
+// ── Strategy / Rebalance ──────────────────────────────────────────────────────
+function getTargetSp() { return (parseFloat(document.getElementById('target-sp').value) || 70) / 100; }
+
+function updateTarget() {
+  const tSp = getTargetSp();
+  document.getElementById('t-sp').textContent   = Math.round(tSp*100);
+  document.getElementById('t-tech').textContent = Math.round((1-tSp)*100);
+  try {
+    localStorage.setItem('pension_target_sp', document.getElementById('target-sp').value);
+    localStorage.setItem('pension_band', document.getElementById('band').value);
+  } catch {}
+  renderRebalRec();
+}
+
+function renderRebalRec() {
+  const el = document.getElementById('rebal-rec');
+  if (!_pd) { el.innerHTML='<span style="color:var(--muted)">시세 로딩 중...</span>'; return; }
+  const { spPx, techPx } = _pd;
+  const snaps = loadSnaps();
+  if (!snaps.length) { el.innerHTML='<span style="color:var(--muted)">보유 현황을 저장하면 리밸런싱 제안이 표시됩니다</span>'; return; }
+
+  const s = snaps[snaps.length-1];
+  const spVal   = s.sp500  * spPx;
+  const techVal = s.tech10 * techPx;
+  const total   = spVal + techVal;
+  const curSp   = spVal / total;            // 현재 S&P500 비중
+  const tSp     = getTargetSp();
+  const band    = (parseFloat(document.getElementById('band').value)||5) / 100;
+  const drift   = curSp - tSp;              // +면 S&P500 과다, -면 부족
+
+  // 목표 비중에 맞춘 권장 보유 주수
+  const tgtSpShares   = Math.round(total * tSp     / spPx);
+  const tgtTechShares = Math.round(total * (1-tSp) / techPx);
+  const dSp   = tgtSpShares   - s.sp500;
+  const dTech = tgtTechShares - s.tech10;
+
+  // 현재/목표 비중 막대
+  const spPct = (curSp*100).toFixed(0), techPct=(100-curSp*100).toFixed(0);
+  const bar =
+    `<div class="bar" style="margin-bottom:10px">
+       <span style="width:${spPct}%;background:var(--teal)">S&P500 ${spPct}%</span>
+       <span style="width:${techPct}%;background:var(--purple)">Tech10 ${techPct}%</span>
+     </div>`;
+
+  let action;
+  if (Math.abs(drift) <= band) {
+    action = `<div style="padding:10px 12px;border-radius:8px;background:#22c55e14;border:1px solid #22c55e55">
+        <span style="color:var(--green);font-weight:700">✓ 밴드 이내 — 조정 불필요</span>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">
+          목표 ${Math.round(tSp*100)}/${Math.round((1-tSp)*100)} 대비 이탈 ${(drift*100).toFixed(1)}%p (밴드 ±${(band*100).toFixed(0)}%p)
+        </div></div>`;
+  } else {
+    const over = drift > 0 ? 'S&P500' : 'Tech10';
+    const fmtShares = (n,nm,px) => {
+      const sign = n>0?'+':'';
+      const col  = n>0?'#22c55e':'#ef4444';
+      return `<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px">
+        <span>${nm}</span>
+        <span style="color:${col};font-weight:700">${sign}${n}주 <span style="color:var(--muted);font-weight:400">(₩${Math.round(Math.abs(n)*px/10000).toLocaleString()}만)</span></span>
+      </div>`;
+    };
+    action = `<div style="padding:10px 12px;border-radius:8px;background:#f9731614;border:1px solid #f9731655">
+        <span style="color:var(--orange);font-weight:700">⚖️ 리밸런싱 권장</span>
+        <span style="font-size:11px;color:var(--muted)"> — ${over} ${Math.abs(drift*100).toFixed(1)}%p 과다</span>
+        ${fmtShares(dSp,'KODEX S&P500', spPx)}
+        ${fmtShares(dTech,'TIGER 미국TOP10', techPx)}
+        <div style="font-size:10px;color:var(--muted);margin-top:6px">
+          💡 연금은 매도보다 <b>신규 납입금으로 부족분 매수</b>가 효율적
+        </div></div>`;
+  }
+
+  el.innerHTML = bar + action +
+    `<div style="font-size:12px;margin-top:10px;font-weight:600">
+       총 평가액 <span style="color:var(--green)">₩${Math.round(total/10000).toLocaleString()}만</span>
+       <span style="color:var(--muted);font-weight:400"> (S&P500 ₩${Math.round(spVal/10000).toLocaleString()}만 · Tech10 ₩${Math.round(techVal/10000).toLocaleString()}만)</span>
+     </div>`;
+
+  document.getElementById('rebal-prices').innerHTML =
+    `KODEX S&P500 ₩${spPx.toLocaleString()} &nbsp;·&nbsp; TIGER 미국TOP10 ₩${techPx.toLocaleString()}`;
+
+  // 현재 보유 카드
+  const ch = document.getElementById('current-holdings');
+  ch.innerHTML =
+    `<div style="font-size:11px;color:var(--muted);margin-bottom:6px">현재 보유 <span style="opacity:.6">${s.date} 입력 · 현재가 평가</span></div>
+     <div style="display:flex;gap:8px;flex-wrap:wrap">
+       <div class="rec-card" style="border-left:3px solid var(--teal)">
+         <div class="rc-label" style="color:var(--teal)">KODEX S&P500</div>
+         <div class="rc-val">${s.sp500}<span style="font-size:11px;font-weight:400;color:var(--muted)">주</span></div>
+         <div class="rc-sub">₩${Math.round(spVal/10000).toLocaleString()}만</div>
+       </div>
+       <div class="rec-card" style="border-left:3px solid var(--purple)">
+         <div class="rc-label" style="color:var(--purple)">TIGER 미국TOP10</div>
+         <div class="rc-val">${s.tech10}<span style="font-size:11px;font-weight:400;color:var(--muted)">주</span></div>
+         <div class="rc-sub">₩${Math.round(techVal/10000).toLocaleString()}만</div>
+       </div>
+     </div>`;
+}
+
+// ── Snapshot ──────────────────────────────────────────────────────────────────
+function downloadSnaps(snaps) {
+  const blob = new Blob([JSON.stringify(snaps,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download='pf_snaps_pension.json'; a.click();
+}
+
+async function saveSnapshot() {
+  const date   = document.getElementById('snap-date').value;
+  const sp500  = parseFloat(document.getElementById('snap-sp500').value)  || 0;
+  const tech10 = parseFloat(document.getElementById('snap-tech10').value) || 0;
+  const stat   = document.getElementById('snap-status');
+
+  if (!date) { stat.innerHTML='<span style="color:var(--red)">날짜를 입력하세요</span>'; return; }
+  stat.innerHTML='<span style="color:var(--blue)">시세 조회 중...</span>';
+
+  let spPx, techPx;
+  const today = new Date().toISOString().slice(0,10);
+  if (date >= today && _pd) {
+    ({ spPx, techPx } = _pd);
+  } else {
+    [spPx, techPx] = await Promise.all([
+      fetchPriceOnDate(SP500_TICKER, date),
+      fetchPriceOnDate(TECH10_TICKER, date),
+    ]);
+    if ((!spPx || !techPx) && _pd) {
+      ({ spPx, techPx } = _pd);
+      toast('⚠ 해당 날짜 시세 없음(비영업일) — 최신 시세로 저장');
+    }
+  }
+  if (!spPx || !techPx) {
+    stat.innerHTML='<span style="color:var(--red)">시세 조회 실패 — 새로고침 후 다시 시도하세요</span>';
+    return;
+  }
+
+  const totalKrw = sp500*spPx + tech10*techPx;
+  const entry = { date, sp500, tech10, sp500Px:spPx, tech10Px:techPx, totalKrw };
+
+  const snaps = loadSnaps();
+  const idx = snaps.findIndex(s => s.date === date);
+  if (idx >= 0) snaps[idx] = entry; else snaps.push(entry);
+  snaps.sort((a,b) => a.date.localeCompare(b.date));
+  saveSnaps(snaps);
+
+  stat.innerHTML=`<span style="color:var(--green)">✓ 저장 완료 — 총 ₩${Math.round(totalKrw/10000).toLocaleString()}만</span>`;
+  renderRebalRec();
+  renderWealthChart();
+  renderSnapList();
+  writeToICloud(snaps).then(ok => {
+    if (ok) stat.innerHTML += ' &nbsp;<span style="color:#60a5fa;font-size:11px">☁️ iCloud 저장됨</span>';
+    else downloadSnaps(snaps);
+  });
+}
+
+function deleteSnap(date) {
+  if (!confirm(`${date} 기록을 삭제할까요?`)) return;
+  saveSnaps(loadSnaps().filter(s=>s.date!==date));
+  renderRebalRec(); renderWealthChart(); renderSnapList();
+}
+
+// ── Charts ────────────────────────────────────────────────────────────────────
+function renderWealthChart() {
+  const snaps = loadSnaps();
+  const el = document.getElementById('wealth-chart');
+  if (!snaps.length) {
+    el.style.height='72px';
+    el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:72px;color:var(--muted);font-size:13px">보유 현황을 입력하면 자산 변화 그래프가 표시됩니다</div>';
+    return;
+  }
+  el.style.height='290px'; el.innerHTML='';
+  const dates=snaps.map(s=>s.date);
+  const krwMan=snaps.map(s=>+(s.totalKrw/10000).toFixed(0));
+  const mode=snaps.length>1?'lines+markers':'markers';
+  Plotly.newPlot(el,[
+    {type:'scatter',mode,name:'총 평가액 (만원)',x:dates,y:krwMan,
+     line:{color:'#14b8a6',width:2},marker:{color:'#14b8a6',size:8},
+     hovertemplate:'%{x}<br>₩<b>%{y:,}만원</b><extra></extra>'},
+  ],{
+    paper_bgcolor:'transparent',plot_bgcolor:'transparent',font:{color:'#d8dce8',size:11},
+    margin:{t:16,b:40,l:64,r:20},
+    xaxis:{gridcolor:'#2a2d3e',linecolor:'#2a2d3e',type:'date'},
+    yaxis:{gridcolor:'#2a2d3e',linecolor:'#2a2d3e',title:{text:'만원',font:{size:10}},tickformat:','},
+    hovermode:'x unified',height:290,showlegend:false,
+  },{responsive:true,displayModeBar:false});
+}
+
+function renderSnapList() {
+  const snaps = loadSnaps();
+  const el = document.getElementById('snap-list');
+  if (!snaps.length) { el.innerHTML=''; return; }
+  el.innerHTML=
+    `<div style="font-size:11px;color:var(--muted);margin:14px 0 6px">입력 기록 (최신 순)</div>
+     <div class="tbl-wrap"><table>
+       <thead><tr>
+         <th>날짜</th><th>S&P500</th><th>Tech10</th>
+         <th>S&P500가</th><th>Tech10가</th><th>총 KRW</th><th></th>
+       </tr></thead>
+       <tbody>${[...snaps].reverse().map(s=>{
+         const krw=Math.round(s.totalKrw/10000).toLocaleString('ko-KR');
+         return `<tr>
+           <td><b>${s.date}</b></td>
+           <td>${s.sp500}주</td><td>${s.tech10}주</td>
+           <td style="color:var(--muted)">₩${s.sp500Px.toLocaleString()}</td>
+           <td style="color:var(--muted)">₩${s.tech10Px.toLocaleString()}</td>
+           <td class="pos">₩${krw}만</td>
+           <td><button onclick="deleteSnap('${s.date}')"
+                 style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:17px;padding:0 4px"
+                 title="삭제">×</button></td>
+         </tr>`;}).join('')}
+       </tbody></table></div>`;
+}
+
+// ── iCloud Drive ──────────────────────────────────────────────────────────────
+function _idbOpen() {
+  return new Promise((res,rej) => {
+    const r=indexedDB.open('pf-icloud',1);
+    r.onupgradeneeded=e=>e.target.result.createObjectStore('h');
+    r.onsuccess=e=>res(e.target.result); r.onerror=()=>rej(r.error);
+  });
+}
+async function _idbSet(v) {
+  const db=await _idbOpen();
+  return new Promise((res,rej)=>{const tx=db.transaction('h','readwrite');tx.objectStore('h').put(v,'dir');tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});
+}
+async function _idbGet() {
+  try {
+    const db=await _idbOpen();
+    return new Promise(res=>{const r=db.transaction('h','readonly').objectStore('h').get('dir');r.onsuccess=()=>res(r.result??null);r.onerror=()=>res(null);});
+  } catch { return null; }
+}
+async function connectICloud() {
+  if (!window.showDirectoryPicker) { toast('Chrome에서만 지원됩니다'); return; }
+  try {
+    const dir=await window.showDirectoryPicker({mode:'readwrite'});
+    await _idbSet(dir); toast('✓ iCloud Drive 연결 완료'); _refreshICloudStatus(dir);
+  } catch(e) { if(e.name!=='AbortError') toast('연결 실패: '+e.message); }
+}
+async function _refreshICloudStatus(handle) {
+  const el=document.getElementById('icloud-status'); if(!el) return;
+  if(!handle) handle=await _idbGet();
+  if(!handle){el.innerHTML='<span style="color:var(--muted)">미연결</span>';return;}
+  const perm=await handle.queryPermission({mode:'readwrite'});
+  el.innerHTML=perm==='granted'?`<span style="color:var(--green)">● ${handle.name}</span>`:`<span style="color:#f97316">● ${handle.name} (권한 필요)</span>`;
+}
+async function writeToICloud(snaps) {
+  const dir=await _idbGet(); if(!dir) return false;
+  try {
+    const perm=await dir.queryPermission({mode:'readwrite'});
+    if(perm!=='granted'&&await dir.requestPermission({mode:'readwrite'})!=='granted') return false;
+    const fh=await dir.getFileHandle('pf_snaps_pension.json',{create:true});
+    const wr=await fh.createWritable();
+    await wr.write(JSON.stringify(snaps,null,2)); await wr.close(); return true;
+  } catch { return false; }
+}
+
+// ── Refresh ───────────────────────────────────────────────────────────────────
+async function refresh() {
+  document.getElementById('last-update').textContent = '데이터 로딩 중...';
+  const [spPx, techPx] = await Promise.all([
+    fetchPrice(SP500_TICKER),
+    fetchPrice(TECH10_TICKER),
+  ]);
+  if (spPx && techPx) _pd = { spPx, techPx };
+
+  const el = document.getElementById('snap-date');
+  if (!el.value) el.value = new Date().toISOString().slice(0,10);
+
+  renderRebalRec();
+  renderWealthChart();
+  renderSnapList();
+  document.getElementById('last-update').textContent =
+    `마지막 업데이트: ${new Date().toLocaleString('ko-KR')}`;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+try {
+  const t=localStorage.getItem('pension_target_sp'); if(t){ document.getElementById('target-sp').value=t; }
+  const b=localStorage.getItem('pension_band');      if(b){ document.getElementById('band').value=b; }
+} catch {}
+document.getElementById('t-sp').textContent   = Math.round(getTargetSp()*100);
+document.getElementById('t-tech').textContent = Math.round((1-getTargetSp())*100);
+if (window.showDirectoryPicker) document.getElementById('icloud-connect-btn').style.display='';
+_refreshICloudStatus();
+syncSnapsFromGitHub();
+refresh();
+</script>
+</body>
+</html>
