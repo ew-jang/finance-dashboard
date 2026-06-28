@@ -26,6 +26,8 @@
 | `pf_snaps_toss.json` | 공개 | 토스증권 보유 스냅샷 배열 (대시보드가 fetch) |
 | `rebal_pension.html` | 공개 | **개인연금 계좌** 리밸런싱 페이지 (전략적 자산배분, KRW) |
 | `pf_snaps_pension.json` | 공개 | 개인연금 보유 스냅샷 배열 |
+| `kiwoom.html` | 공개 | **키움 국내/해외 공용** 수익률 추적 페이지 (`?acct=kr\|us`) |
+| `pf_snaps_kiwoomkr.json` / `pf_snaps_kiwoomus.json` | 공개 | 키움 계좌별 보유종목+매입단가 (holdings 객체) |
 | `signal_check.py` | 로컬 | 종목 신호 + 리밸런싱 필요 여부 분석 → 카톡 메시지 문자열 출력 |
 | `send_alert.sh` | 로컬 | `signal_check.py` 실행 후 Claude CLI로 카톡 발송 (7AM) |
 | `sync_snaps.sh` | 로컬 | 30초마다 Downloads/repo의 `pf_snaps_*.json` 변경분을 git push |
@@ -38,25 +40,36 @@
 
 ## 3. 데이터 모델 — `pf_snaps_<계좌>.json`
 
-날짜별 스냅샷 배열. **마지막 원소 = 최신 보유 현황**.
+각 페이지가 자기 데이터 파일을 가지며, **페이지 유형에 따라 스키마가 2가지**다. (파일명은 `pf_snaps_*` 와일드카드로 통일 → 동기화 스크립트가 자동 처리)
+
+### (A) 스냅샷 배열형 — 리밸런싱 계좌 (토스·연금)
+날짜별 스냅샷 배열. **마지막 원소 = 최신 보유 현황**. 자산 변화 차트의 소스.
 
 ```json
 [
-  {
-    "date": "2026-06-21",   // YYYY-MM-DD (같은 날짜는 덮어씀)
-    "tqqq": 45,             // TQQQ 보유 주수
-    "qqqm": 0,              // QQQM 보유 주수
-    "usd": 7441,            // 보유 달러 현금 ($)
-    "tqqqPx": 82.87,        // 저장 시점 TQQQ 시세
-    "qqqmPx": 304.52,       // 저장 시점 QQQM 시세
-    "usdkrw": 1529.89,      // 저장 시점 환율
-    "totalUsd": 11170.15,   // 총 평가액 ($)
-    "totalKrw": 17089101    // 총 평가액 (₩)
-  }
+  { "date":"2026-06-21",      // YYYY-MM-DD (같은 날짜는 덮어씀)
+    "tqqq":45, "qqqm":0, "usd":7441,        // (토스) 보유 — 계좌마다 키 다름
+    "tqqqPx":82.87, "qqqmPx":304.52, "usdkrw":1529.89,  // 저장 시점 시세
+    "totalUsd":11170.15, "totalKrw":17089101 }          // 총 평가액
 ]
 ```
+> 연금은 `{date, sp500, tech10, sp500Px, tech10Px, totalKrw}` 처럼 키만 다른 같은 패턴.
 
-> 다른 종목 구성을 쓰는 계좌라면 키 이름(tqqq/qqqm/usd)을 그 계좌 전략에 맞게 바꾸고, 해당 `rebal_<계좌>.html`과 `signal_check.py`도 같이 맞춘다.
+### (B) holdings 객체형 — 수익률 추적 계좌 (키움)
+보유 종목 + **매입단가**로 실시간 수익률을 계산. 시계열이 아니라 현재 상태.
+
+```json
+{
+  "label":"키움 국내", "sub":"6523-5376 위탁종합", "currency":"KRW",
+  "holdings":[
+    { "name":"삼성전자", "ticker":"005930.KS", "qty":31, "avgCost":204071 },
+    { "name":"KODEX 미국우주항공", "ticker":"0167Z0.KS", "qty":100, "avgCost":10445 }
+  ]
+}
+```
+> 현재가는 `ticker`로 Yahoo에서 실시간 조회. `수익률 = (현재가-avgCost)/avgCost`. USD 계좌는 `USDKRW=X`로 원화 환산.
+
+> 다른 종목 구성을 쓰는 계좌라면 키 이름을 그 계좌에 맞게 바꾸고, 해당 페이지(와 알림이 필요하면 `signal_check.py`)도 같이 맞춘다.
 
 ---
 

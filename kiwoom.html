@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>키움증권 수익률</title>
+<style>
+:root {
+  --bg0:#0b0d14; --bg1:#141720; --bg2:#1c1f2e;
+  --bd:#2a2d3e; --tx:#d8dce8; --muted:#6b7280;
+  --green:#22c55e; --red:#ef4444; --blue:#3b82f6; --orange:#f97316;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+       background:var(--bg0); color:var(--tx); font-size:14px; }
+.wrap { max-width:960px; margin:0 auto; padding:20px; }
+
+header { display:flex; justify-content:space-between; align-items:center;
+         padding-bottom:16px; border-bottom:1px solid var(--bd); margin-bottom:20px; }
+header h1 { font-size:20px; font-weight:700; }
+#last-update { color:var(--muted); font-size:12px; margin-top:2px; }
+.back-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px;
+            background:var(--bg2); border:1px solid var(--bd); border-radius:7px;
+            color:var(--tx); font-size:13px; font-weight:500; text-decoration:none; cursor:pointer; }
+.back-btn:hover { opacity:.8; }
+
+.card { background:var(--bg1); border:1px solid var(--bd); border-radius:12px; padding:20px; margin-bottom:20px; }
+
+/* 계좌 탭 */
+.tabs { display:flex; gap:8px; margin-bottom:18px; }
+.tab { padding:8px 16px; border-radius:8px; border:1px solid var(--bd); background:var(--bg2);
+       color:var(--muted); font-size:13px; font-weight:600; text-decoration:none; }
+.tab.active { color:var(--tx); border-color:var(--blue); background:#3b82f618; }
+
+/* 요약 카드 */
+.summary { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:var(--bd);
+           border:1px solid var(--bd); border-radius:10px; overflow:hidden; margin-bottom:18px; }
+.summary > div { background:var(--bg1); padding:14px 16px; }
+.summary .s-label { font-size:11px; color:var(--muted); margin-bottom:5px; }
+.summary .s-val { font-size:17px; font-weight:700; }
+.summary .s-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+@media(max-width:620px){ .summary { grid-template-columns:1fr; } }
+
+.btn { padding:8px 14px; border-radius:7px; border:none; cursor:pointer; font-size:13px; font-weight:500; }
+.btn-add { background:var(--blue); color:#fff; }
+.btn-ref { background:var(--bg2); color:var(--tx); border:1px solid var(--bd); }
+.btn:hover { opacity:.85; }
+
+input[type=number], input[type=text] {
+  width:100%; padding:7px 9px; background:var(--bg0); border:1px solid var(--bd);
+  border-radius:6px; color:var(--tx); font-size:13px;
+}
+input:focus { outline:none; border-color:var(--blue); }
+.cell-inp { background:transparent; border:1px solid transparent; padding:4px 6px; text-align:right; }
+.cell-inp:hover { border-color:var(--bd); }
+.cell-inp:focus { border-color:var(--blue); background:var(--bg0); }
+
+.tbl-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+th { padding:9px 11px; color:var(--muted); font-size:11px; font-weight:500;
+     border-bottom:1px solid var(--bd); white-space:nowrap; text-align:right; }
+th:first-child { text-align:left; }
+td { padding:7px 11px; border-bottom:1px solid var(--bd); font-size:13px; white-space:nowrap; text-align:right; }
+td:first-child { text-align:left; }
+tr:last-child td { border-bottom:none; }
+.gain { color:var(--green); font-weight:600; }
+.loss { color:var(--red); font-weight:600; }
+.tname { font-weight:600; }
+.tticker { font-size:11px; color:var(--muted); }
+
+.addrow { display:grid; grid-template-columns:1.4fr 1fr .7fr .9fr auto; gap:8px; align-items:end; margin-top:14px; }
+.addrow label { font-size:10px; color:var(--muted); display:block; margin-bottom:3px; }
+@media(max-width:620px){ .addrow { grid-template-columns:1fr 1fr; } }
+
+#toast { position:fixed; bottom:22px; right:22px; padding:10px 18px; background:var(--bg2);
+         border:1px solid var(--bd); border-radius:8px; font-size:13px; opacity:0;
+         transition:opacity .3s; z-index:999; pointer-events:none; }
+#toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1 id="acct-title">키움증권</h1>
+    <div id="last-update">로딩 중...</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="btn btn-ref" onclick="refresh()">↺ 새로고침</button>
+    <a class="back-btn" href="index.html">← 대시보드</a>
+  </div>
+</header>
+
+<div class="tabs">
+  <a class="tab" id="tab-kr" href="kiwoom.html?acct=kr">🇰🇷 국내</a>
+  <a class="tab" id="tab-us" href="kiwoom.html?acct=us">🇺🇸 해외</a>
+</div>
+
+<div class="card">
+  <div class="summary" id="summary"></div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>종목</th><th>수량</th><th>매입가</th><th>현재가</th>
+        <th>매입금액</th><th>평가금액</th><th>평가손익</th><th>수익률</th><th></th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <div class="addrow">
+    <div><label>종목명</label><input type="text" id="add-name" placeholder="삼성전자"></div>
+    <div><label>티커 (Yahoo)</label><input type="text" id="add-ticker" placeholder="005930.KS / TSLA"></div>
+    <div><label>수량</label><input type="number" id="add-qty" placeholder="0" min="0"></div>
+    <div><label>매입단가</label><input type="number" id="add-cost" placeholder="0" min="0" step="any"></div>
+    <button class="btn btn-add" onclick="addHolding()">➕ 추가</button>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-top:16px;padding-top:12px;border-top:1px solid var(--bd);flex-wrap:wrap">
+    <span style="font-size:12px;color:var(--muted)">☁️ iCloud Drive</span>
+    <span id="icloud-status" style="font-size:12px"></span>
+    <button id="icloud-connect-btn" class="btn btn-ref"
+            style="display:none;padding:6px 12px;font-size:12px" onclick="connectICloud()">폴더 연결 (Mac 최초 1회)</button>
+    <span style="font-size:11px;color:var(--muted);margin-left:auto">매입단가·수량은 표에서 바로 수정 가능 · 저장은 자동</span>
+  </div>
+</div>
+
+</div>
+<div id="toast"></div>
+
+<script>
+const CORS_PROXY = 'https://corsproxy.io/?';
+const ACCOUNTS = {
+  kr: { label:'키움 국내', sub:'6523-5376 위탁종합', cur:'KRW', file:'pf_snaps_kiwoomkr.json' },
+  us: { label:'키움 해외', sub:'5517-1385 위탁종합', cur:'USD', file:'pf_snaps_kiwoomus.json' },
+};
+const SNAPS_BASE = 'https://ew-jang.github.io/finance-dashboard/';
+const ACCT  = (new URLSearchParams(location.search).get('acct') === 'us') ? 'us' : 'kr';
+const CFG   = ACCOUNTS[ACCT];
+const LSKEY = 'kiwoom_' + ACCT;
+
+let HOLDINGS = [];     // [{name,ticker,qty,avgCost}]
+let PRICES   = {};     // ticker -> 현재가 (해당 통화)
+let USDKRW   = null;
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, ms=2600){ const e=document.getElementById('toast'); e.textContent=msg; e.classList.add('show'); setTimeout(()=>e.classList.remove('show'),ms); }
+
+// ── Format ────────────────────────────────────────────────────────────────────
+function fmtCur(n){
+  if (CFG.cur==='USD') return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return '₩'+Math.round(n).toLocaleString('ko-KR');
+}
+function fmtKrwMan(n){ return '₩'+Math.round(n/10000).toLocaleString('ko-KR')+'만'; }
+
+// ── Persistence ───────────────────────────────────────────────────────────────
+function loadLocal(){ try{ const s=localStorage.getItem(LSKEY); if(s) return JSON.parse(s); }catch{} return null; }
+function saveLocal(){ try{ localStorage.setItem(LSKEY, JSON.stringify(HOLDINGS)); }catch{} }
+
+async function syncFromGitHub(){
+  // GitHub(=Mac가 관리하는 최신 상태)를 source of truth로 사용
+  try{
+    const res = await fetch(SNAPS_BASE + CFG.file + '?t=' + Date.now());
+    if(!res.ok) return;
+    const data = await res.json();
+    if(data && Array.isArray(data.holdings)) HOLDINGS = data.holdings;
+  }catch{}
+}
+
+// ── Data file I/O ─────────────────────────────────────────────────────────────
+function buildFileObj(){ return { label:CFG.label, sub:CFG.sub, currency:CFG.cur, holdings:HOLDINGS }; }
+function downloadFile(){
+  const blob=new Blob([JSON.stringify(buildFileObj(),null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=CFG.file; a.click();
+}
+async function persist(){
+  saveLocal(); render();
+  const ok = await writeToICloud();
+  if(!ok) downloadFile();
+}
+
+// ── API ───────────────────────────────────────────────────────────────────────
+async function apiFetch(url){ try{ return await (await fetch(url)).json(); }catch{} return (await fetch(CORS_PROXY+encodeURIComponent(url))).json(); }
+async function fetchPrice(ticker){
+  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=5d`;
+  try{ const d=await apiFetch(url); return d.chart.result[0].meta.regularMarketPrice ?? null; }catch{ return null; }
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render(){
+  // 합계
+  let totBuy=0, totEval=0;
+  HOLDINGS.forEach(h=>{ const px=PRICES[h.ticker]; totBuy+=h.qty*h.avgCost; if(px!=null) totEval+=h.qty*px; });
+  const totPnl=totEval-totBuy, totRet=totBuy?totPnl/totBuy*100:0;
+  const cls=totPnl>=0?'gain':'loss', sign=totPnl>=0?'+':'';
+
+  const krwLine = (CFG.cur==='USD' && USDKRW)
+    ? `<div class="s-sub">${fmtKrwMan(totEval*USDKRW)} (환율 ${USDKRW.toLocaleString()})</div>` : '';
+
+  document.getElementById('summary').innerHTML =
+    `<div>
+       <div class="s-label">총 손익</div>
+       <div class="s-val ${cls}">${sign}${fmtCur(totPnl)}</div>
+       <div class="s-sub ${cls}">${sign}${totRet.toFixed(2)}%</div>
+     </div>
+     <div>
+       <div class="s-label">총 매입</div>
+       <div class="s-val">${fmtCur(totBuy)}</div>
+       <div class="s-sub">${CFG.cur==='USD'&&USDKRW?fmtKrwMan(totBuy*USDKRW):'&nbsp;'}</div>
+     </div>
+     <div>
+       <div class="s-label">총 평가</div>
+       <div class="s-val">${fmtCur(totEval)}</div>
+       ${krwLine || '<div class="s-sub">&nbsp;</div>'}
+     </div>`;
+
+  // 행
+  document.getElementById('rows').innerHTML = HOLDINGS.map((h,i)=>{
+    const px=PRICES[h.ticker];
+    const buy=h.qty*h.avgCost;
+    const evl=px!=null?h.qty*px:null;
+    const pnl=evl!=null?evl-buy:null;
+    const ret=(evl!=null&&buy)?pnl/buy*100:null;
+    const c=pnl==null?'':(pnl>=0?'gain':'loss');
+    const sg=pnl!=null&&pnl>=0?'+':'';
+    return `<tr>
+      <td><div class="tname">${h.name}</div><div class="tticker">${h.ticker}</div></td>
+      <td><input class="cell-inp" type="number" min="0" value="${h.qty}" onchange="editH(${i},'qty',this.value)"></td>
+      <td><input class="cell-inp" type="number" min="0" step="any" value="${h.avgCost}" onchange="editH(${i},'avgCost',this.value)"></td>
+      <td>${px!=null?fmtCur(px):'—'}</td>
+      <td>${fmtCur(buy)}</td>
+      <td>${evl!=null?fmtCur(evl):'—'}</td>
+      <td class="${c}">${pnl!=null?sg+fmtCur(pnl):'—'}</td>
+      <td class="${c}">${ret!=null?sg+ret.toFixed(2)+'%':'—'}</td>
+      <td><button onclick="removeH(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">×</button></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">보유 종목이 없습니다. 아래에서 추가하세요.</td></tr>`;
+}
+
+// ── Edit ──────────────────────────────────────────────────────────────────────
+function editH(i,field,val){ const n=parseFloat(val)||0; HOLDINGS[i][field]=n; persist(); }
+function removeH(i){ if(!confirm(`${HOLDINGS[i].name} 삭제?`))return; HOLDINGS.splice(i,1); persist(); }
+function addHolding(){
+  const name=document.getElementById('add-name').value.trim();
+  const ticker=document.getElementById('add-ticker').value.trim();
+  const qty=parseFloat(document.getElementById('add-qty').value)||0;
+  const cost=parseFloat(document.getElementById('add-cost').value)||0;
+  if(!name||!ticker){ toast('종목명과 티커를 입력하세요'); return; }
+  HOLDINGS.push({name,ticker,qty,avgCost:cost});
+  document.getElementById('add-name').value='';
+  document.getElementById('add-ticker').value='';
+  document.getElementById('add-qty').value='';
+  document.getElementById('add-cost').value='';
+  persist();
+  fetchPrice(ticker).then(p=>{ if(p!=null){PRICES[ticker]=p; render();} });
+  toast(`✓ ${name} 추가됨`);
+}
+
+// ── iCloud (Chrome 직접 쓰기) ─────────────────────────────────────────────────
+function _idbOpen(){ return new Promise((res,rej)=>{ const r=indexedDB.open('pf-icloud',1); r.onupgradeneeded=e=>e.target.result.createObjectStore('h'); r.onsuccess=e=>res(e.target.result); r.onerror=()=>rej(r.error); }); }
+async function _idbGet(){ try{ const db=await _idbOpen(); return new Promise(res=>{ const r=db.transaction('h','readonly').objectStore('h').get('dir'); r.onsuccess=()=>res(r.result??null); r.onerror=()=>res(null); }); }catch{ return null; } }
+async function _idbSet(v){ const db=await _idbOpen(); return new Promise((res,rej)=>{ const tx=db.transaction('h','readwrite'); tx.objectStore('h').put(v,'dir'); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }
+async function connectICloud(){
+  if(!window.showDirectoryPicker){ toast('Chrome에서만 지원됩니다'); return; }
+  try{ const dir=await window.showDirectoryPicker({mode:'readwrite'}); await _idbSet(dir); toast('✓ iCloud 연결 완료'); _refreshICloudStatus(dir); }
+  catch(e){ if(e.name!=='AbortError') toast('연결 실패'); }
+}
+async function _refreshICloudStatus(handle){
+  const el=document.getElementById('icloud-status'); if(!el) return;
+  if(!handle) handle=await _idbGet();
+  if(!handle){ el.innerHTML='<span style="color:var(--muted)">미연결</span>'; return; }
+  const perm=await handle.queryPermission({mode:'readwrite'});
+  el.innerHTML = perm==='granted' ? `<span style="color:var(--green)">● ${handle.name}</span>` : `<span style="color:#f97316">● ${handle.name} (권한 필요)</span>`;
+}
+async function writeToICloud(){
+  const dir=await _idbGet(); if(!dir) return false;
+  try{
+    const perm=await dir.queryPermission({mode:'readwrite'});
+    if(perm!=='granted' && await dir.requestPermission({mode:'readwrite'})!=='granted') return false;
+    const fh=await dir.getFileHandle(CFG.file,{create:true});
+    const wr=await fh.createWritable(); await wr.write(JSON.stringify(buildFileObj(),null,2)); await wr.close(); return true;
+  }catch{ return false; }
+}
+
+// ── Refresh ───────────────────────────────────────────────────────────────────
+async function refresh(){
+  document.getElementById('last-update').textContent='시세 로딩 중...';
+  const tickers=[...new Set(HOLDINGS.map(h=>h.ticker))];
+  const tasks=tickers.map(t=>fetchPrice(t).then(p=>{ if(p!=null) PRICES[t]=p; }));
+  if(CFG.cur==='USD') tasks.push(fetchPrice('USDKRW=X').then(p=>{ if(p!=null) USDKRW=p; }));
+  await Promise.all(tasks);
+  render();
+  document.getElementById('last-update').textContent =
+    `${CFG.sub}  ·  ${new Date().toLocaleString('ko-KR')}`;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.title = CFG.label + ' 수익률';
+document.getElementById('acct-title').textContent = '🏦 ' + CFG.label;
+document.getElementById('tab-'+ACCT).classList.add('active');
+if(window.showDirectoryPicker) document.getElementById('icloud-connect-btn').style.display='';
+
+(async ()=>{
+  const local=loadLocal();
+  if(local && local.length) HOLDINGS=local;
+  await syncFromGitHub();   // GitHub 우선 (Mac이 push한 최신 상태)
+  saveLocal();
+  _refreshICloudStatus();
+  render();
+  await refresh();
+})();
+</script>
+</body>
+</html>
