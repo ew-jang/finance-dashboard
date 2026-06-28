@@ -2,6 +2,7 @@
   "label": "키움 국내",
   "sub": "6523-5376 위탁종합",
   "currency": "KRW",
+  "cash": 4221534,
   "holdings": [
     { "name": "삼성전자", "ticker": "005930.KS", "qty": 31, "avgCost": 204071 },
     { "name": "KODEX 미국우주항공", "ticker": "0167Z0.KS", "qty": 100, "avgCost": 10445 }

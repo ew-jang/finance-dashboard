@@ -2,6 +2,7 @@
   "label": "키움 해외",
   "sub": "5517-1385 위탁종합",
   "currency": "USD",
+  "cash": 9107.13,
   "holdings": [
     { "name": "금 SPDR ETF", "ticker": "GLD", "qty": 20, "avgCost": 350.36 },
     { "name": "QQQ 2배 (QLD)", "ticker": "QLD", "qty": 180, "avgCost": 70.1102 },
